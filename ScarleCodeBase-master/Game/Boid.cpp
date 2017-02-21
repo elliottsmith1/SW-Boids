@@ -5,15 +5,17 @@ Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : C
 {
 	GameObject.FindGameObjectWithTag("Control").GetComponent<ControlScript>().addBoid(this);
 
-	acceleration = new Vector3(0, 0, 0);
+	acceleration = Vector3(0, 0, 0);
 
-	float angle = Random.Range(0.1f, 359.0f);
-	velocity = new Vector3(cos(angle), 0, sin(angle));
+	float angle = 0.1 + (rand() % (int)(359 - 0.1 + 1));
+	velocity = Vector3(cos(angle), 0, sin(angle));
 
 	position = m_pos;
 	r = 2.0f;
 	maxspeed = 0.2f;
-	maxforce = 0.03f;
+
+	float maxF = 0.03f;
+	maxforce = Vector3(maxF, maxF, maxF);
 }
 
 Boid::~Boid()
@@ -24,8 +26,6 @@ Boid::~Boid()
 
 void Boid::Tick(GameData* _GD)
 {
-
-
 	CMOGO::Tick(_GD);
 }
 
@@ -48,7 +48,7 @@ void Boid::flock(vector<std::unique_ptr<Boid>> boids)
 	Vector3 coh = cohesion(boids);   // Cohesion
 	Vector3 boun = Vector3(0, 0, 0);
 
-	for (int i = 0; i < boids.size; i++)
+	for (int i = 0; i < boids.size(); i++)
 	{
 		boun = boundingBox(boids[i]);
 	}
@@ -70,7 +70,7 @@ void Boid::updateBoid()
 	// Update velocity
 	velocity += acceleration;
 	// Limit speed
-	velocity = Vector3.ClampMagnitude(velocity, maxspeed);
+	velocity = XMVectorClamp(velocity, velocity, maxspeed);
 	m_pos += velocity;
 	// Reset accelertion to 0 each cycle
 	acceleration *= 0;
@@ -85,7 +85,8 @@ Vector3 Boid::seek(Vector3 target)
 
 	// Steering = Desired minus Velocity
 	Vector3 steer = (desired - velocity);
-	steer = Vector3.ClampMagnitude(steer, maxforce);  // Limit to maximum steering force
+	steer = XMVectorClamp(steer, steer, maxforce);
+
 	return steer;
 }
 
@@ -133,16 +134,16 @@ Vector3 Boid::separate(vector<std::unique_ptr<Boid>> boids)
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
-	for (int i = 0; i < boids.size; i++)
+	for (int i = 0; i < boids.size(); i++)
 	{
+		float d = Vector3::Distance(m_pos, boids[i]->GetPos());
+
 		if (checkColour(this, boids[i]))
 		{
-			float d = Vector3.Distance(m_pos, boids[i].m_pos);
-			// If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-			if ((d > 0) && (d < desiredseparation))
+			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < desiredseparation)
 			{
 				// Calculate vector pointing away from neighbor
-				Vector3 diff = (m_pos - boids[i].m_pos);
+				Vector3 diff = (m_pos - boids[i]->GetPos());
 				diff.Normalize();
 				diff /= d;        // Weight by distance
 				steer += diff;
@@ -159,11 +160,11 @@ Vector3 Boid::separate(vector<std::unique_ptr<Boid>> boids)
 	// As long as the vector is greater than 0
 	if (steer.magnitude > 0)
 	{
-		// Implement Reynolds: Steering = Desired - Velocity
 		steer.Normalize();
 		steer *= maxspeed;
 		steer -= velocity;
-		steer = Vector3.ClampMagnitude(steer, maxforce);
+		steer = XMVectorClamp(steer, steer, maxforce);
+		//steer = Vector3.ClampMagnitude(steer, maxforce);
 	}
 	return steer;
 }
@@ -171,16 +172,18 @@ Vector3 Boid::separate(vector<std::unique_ptr<Boid>> boids)
 Vector3 Boid::align(vector<std::unique_ptr<Boid>> boids)
 {
 	float neighbordist = 2.5f;
-	Vector3 sum = Vector3(0, 0);
+	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
-	for (int i = 0; i < boids.size; i++)
+	for (int i = 0; i < boids.size(); i++)
 	{
 		if (checkColour(this, boids[i]))
 		{
-			float d = Vector3.Distance(m_pos, boids[i].m_pos);
-			if ((d > 0) && (d < neighbordist))
+			/*float d = Vector3::Distance(m_pos, boids[i]->GetPos()) < 10;
+			if ((d > 0) && (d < neighbordist))*/
+
+			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
 			{
-				sum += boids[i].velocity;
+				sum += boids[i]->GetVelocity();
 				count++;
 			}
 		}
@@ -189,11 +192,10 @@ Vector3 Boid::align(vector<std::unique_ptr<Boid>> boids)
 	{
 		sum /= ((float)count);
 
-		// Implement Reynolds: Steering = Desired - Velocity
 		sum.Normalize();
 		sum *= maxspeed;
 		Vector3 steer = (sum - velocity);
-		steer = Vector3.ClampMagnitude(steer, maxforce);
+		steer = XMVectorClamp(steer, steer, maxforce);
 		return steer;
 	}
 	else
@@ -207,14 +209,13 @@ Vector3 Boid::cohesion(vector<std::unique_ptr<Boid>> boids)
 	float neighbordist = 2.5f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
-	for (int i = 0; i < boids.size; i++)
+	for (int i = 0; i < boids.size(); i++)
 	{
 		if (checkColour(this, boids[i]))
 		{
-			float d = Vector3.Distance(m_pos, boids[i].m_pos);
-			if ((d > 0) && (d < neighbordist))
+			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
 			{
-				sum += boids[i]->GetPos(); // Add position
+				sum += boids[i]->GetPos(); 
 				count++;
 			}
 		}
@@ -223,7 +224,7 @@ Vector3 Boid::cohesion(vector<std::unique_ptr<Boid>> boids)
 	if (count > 0)
 	{
 		sum /= count;
-		return seek(sum);  // Steer towards the position
+		return seek(sum);  
 	}
 	else
 	{
@@ -242,4 +243,14 @@ bool Boid::checkColour(Boid b, Boid c)
 	{
 		return false;
 	}
+}
+
+Vector3 Boid::GetVelocity()
+{
+	return velocity;
+}
+
+int Boid::GetTag()
+{
+	return tag;
 }

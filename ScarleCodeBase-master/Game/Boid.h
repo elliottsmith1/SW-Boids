@@ -23,7 +23,8 @@ public:
 	Vector3 cohesion(vector<std::unique_ptr<Boid>> boids);
 	bool checkColour(Boid b, Boid c);
 
-
+	Vector3 GetVelocity();
+	int GetTag();
 
 protected:
 
@@ -31,8 +32,7 @@ protected:
 	Vector3 velocity;
 	Vector3 acceleration;
 	float r;
-	float maxforce;    
+	Vector3 maxforce;    
 	float maxspeed;   
 	int tag = 1;
-
 };
