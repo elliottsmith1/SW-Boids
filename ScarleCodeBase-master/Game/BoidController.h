@@ -1,28 +1,27 @@
+#pragma once
+
 #include "gameobject.h"
-#include "Boid.h"
+#include <d3d11_1.h>
 #include <vector>
-
-using std::list;
-
-//=================================================================
-//Terrian Game Object Class (i.e. an Object that just sits there)
-//=================================================================
+#include <string>
 
 struct GameData;
+struct DrawData;
+class Boid;
 
-class BoidController : public GameObject
+class BoidController
 {
 public:
-	BoidController() = default; 
+	BoidController(int num, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
 	~BoidController() = default; 
 
-	void Tick(GameData* _GD) override {};
-	void addBoid(GameObject* b);
+	void Tick(GameData* _GD);
 
-	//list<GameObject *> boids;
-	std::vector<std::unique_ptr<Boid>> boids;
+	std::vector<Boid*> boids;
 
 protected:
+
+	Boid* boid;
 
 };
 

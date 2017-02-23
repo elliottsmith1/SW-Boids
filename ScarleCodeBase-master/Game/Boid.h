@@ -1,7 +1,5 @@
 #include "CMOGO.h"
-#include <list>
-
-using std::list;
+#include <vector>
 
 class Boid : public CMOGO
 {
@@ -12,27 +10,31 @@ public:
 
 	virtual void Tick(GameData* _GD) override;
 
-	void runBoid(vector<std::unique_ptr<Boid>> boids);
+	void runBoid(vector<Boid*> boids);
 	void applyForce(Vector3 force);
-	void flock(vector<std::unique_ptr<Boid>> boids);
+	void flock(vector<Boid*> boids);
 	void updateBoid();
 	Vector3 seek(Vector3 target);
 	Vector3 boundingBox(Boid b);
-	Vector3 separate(vector<std::unique_ptr<Boid>> boids);
-	Vector3 align(vector<std::unique_ptr<Boid>> boids);
-	Vector3 cohesion(vector<std::unique_ptr<Boid>> boids);
+	Vector3 separate(vector<Boid*> boids);
+	Vector3 align(vector<Boid*> boids);
+	Vector3 cohesion(vector<Boid*> boids);
 	bool checkColour(Boid b, Boid c);
-
 	Vector3 GetVelocity();
 	int GetTag();
+	void SetActive(bool act);
+	bool GetActive();
+
 
 protected:
 
 	Vector3 position;
 	Vector3 velocity;
 	Vector3 acceleration;
+	//BoidController* controller;
 	float r;
 	Vector3 maxforce;    
-	float maxspeed;   
+	Vector3 maxspeed;   
 	int tag = 1;
+	bool active = false;
 };

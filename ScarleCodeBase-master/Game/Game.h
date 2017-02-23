@@ -27,6 +27,7 @@ struct GameData;
 struct DrawData;
 struct DrawData2D;
 class Light;
+class BoidController;
 
 class Game
 {
@@ -69,6 +70,8 @@ protected:
 
 	//sound stuff
 	std::unique_ptr<AudioEngine> m_audioEngine;
+
+	std::unique_ptr<BoidController> controller;
 
 	//Tick functions for each state
 	void PlayTick();

@@ -11,6 +11,7 @@
 #include "GameData.h"
 #include "drawdata.h"
 #include "DrawData2D.h"
+#include "BoidController.h"
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
@@ -171,6 +172,8 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//text->SetPos(Vector2(100, 10));
 	//text->SetColour(Color((float*)&Colors::Yellow));
 	//m_GameObject2Ds.push_back(text);
+
+	controller = std::make_unique<BoidController>(20, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
 };
 
 
