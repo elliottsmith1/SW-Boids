@@ -22,16 +22,15 @@ public:
 	bool checkColour(Boid b, Boid c);
 	Vector3 GetVelocity();
 	int GetTag();
+	void SetTag(int num);
 	void SetActive(bool act);
 	bool GetActive();
-
 
 protected:
 
 	Vector3 position;
 	Vector3 velocity;
 	Vector3 acceleration;
-	//BoidController* controller;
 	float r;
 	Vector3 maxforce;    
 	Vector3 maxspeed;   

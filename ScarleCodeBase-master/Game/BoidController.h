@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameobject.h"
+#include "Model.h"
 #include <d3d11_1.h>
 #include <vector>
 #include <string>
@@ -15,7 +16,8 @@ public:
 	BoidController(int num, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
 	~BoidController() = default; 
 
-	void Tick(GameData* _GD);
+	void Tick(GameData* _GD, DrawData* _DD);
+	void Draw(DrawData* _DD);
 
 	std::vector<Boid*> boids;
 

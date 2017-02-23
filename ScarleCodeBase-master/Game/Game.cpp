@@ -267,6 +267,7 @@ bool Game::Tick()
 	case GS_GAME_OVER:
 		break;
 	case GS_PLAY_MAIN_CAM:
+		controller->Tick();
 	case GS_PLAY_TPS_CAM:
 		PlayTick();
 		break;

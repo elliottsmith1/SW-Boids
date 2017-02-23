@@ -2,7 +2,7 @@
 #include "GameData.h"
 #include "Boid.h"
 
-BoidController::BoidController(int num, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF)
+BoidController::BoidController(int num, std::string _fileName, ID3D11Device * _pd3dDevice, IEffectFactory * _EF)
 {
 	boids.reserve(num);
 
@@ -13,7 +13,7 @@ BoidController::BoidController(int num, std::string _fileName, ID3D11Device* _pd
 	}
 }
 
-void BoidController::Tick(GameData* _GD)
+void BoidController::Tick(GameData* _GD, DrawData* _DD)
 {
 	for (int i = 0; i < boids.size(); i++)
 	{
@@ -27,16 +27,34 @@ void BoidController::Tick(GameData* _GD)
 			if (boids[i]->GetActive() != true)
 			{
 				boids[i]->SetActive(true);
+				boids[i]->SetTag(1);
 				return;
 			}
 		}
-
-		//Instantiate(blueBoid, new Vector3(12, 0, 12), Quaternion.identity);
 	}
 
 	if (_GD->m_keyboardState[DIK_R] & 0x80)
 	{
-		//Instantiate(redBoid, new Vector3(12, 0, 12), Quaternion.identity);
+		for (int i = 0; i < boids.size(); i++)
+		{
+			if (boids[i]->GetActive() != true)
+			{
+				boids[i]->SetActive(true);
+				boids[i]->SetTag(2);
+				return;
+			}
+		}
 	}
+
+	Draw(_DD);
+}
+
+void BoidController::Draw(DrawData* _DD)
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		boids[i]->Draw(_DD);
+	}
+
 }
 

@@ -9,6 +9,7 @@ Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : C
 	float angle = 0.1 + (rand() % (int)(359 - 0.1 + 1));
 	velocity = Vector3(cos(angle), 0, sin(angle));
 
+	m_pos = Vector3(0, 1, 0);
 	position = m_pos;
 	r = 2.0f;
 
@@ -252,6 +253,11 @@ Vector3 Boid::GetVelocity()
 int Boid::GetTag()
 {
 	return tag;
+}
+
+void Boid::SetTag(int num)
+{
+	tag = num; 
 }
 
 void Boid::SetActive(bool act)
