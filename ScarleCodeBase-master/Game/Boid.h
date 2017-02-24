@@ -10,12 +10,12 @@ public:
 
 	virtual void Tick(GameData* _GD) override;
 
-	void runBoid(vector<Boid*> boids);
+	void runBoid(vector<Boid*> boids, GameData* _GD);
 	void applyForce(Vector3 force);
 	void flock(vector<Boid*> boids);
 	void updateBoid();
 	Vector3 seek(Vector3 target);
-	Vector3 boundingBox(Boid b);
+	Vector3 boundingBox();
 	Vector3 separate(vector<Boid*> boids);
 	Vector3 align(vector<Boid*> boids);
 	Vector3 cohesion(vector<Boid*> boids);
@@ -32,8 +32,8 @@ protected:
 	Vector3 velocity;
 	Vector3 acceleration;
 	float r;
-	Vector3 maxforce;    
-	Vector3 maxspeed;   
+	float maxforce;    
+	float maxspeed;   
 	int tag = 1;
 	bool active = false;
 };

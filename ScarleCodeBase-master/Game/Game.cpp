@@ -173,7 +173,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//text->SetColour(Color((float*)&Colors::Yellow));
 	//m_GameObject2Ds.push_back(text);
 
-	controller = std::make_unique<BoidController>(20, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
+	controller = std::make_unique<BoidController>(10, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
 };
 
 
@@ -267,7 +267,7 @@ bool Game::Tick()
 	case GS_GAME_OVER:
 		break;
 	case GS_PLAY_MAIN_CAM:
-		controller->Tick();
+		PlayTick();
 	case GS_PLAY_TPS_CAM:
 		PlayTick();
 		break;
@@ -291,6 +291,17 @@ void Game::PlayTick()
 		}
 	}
 
+	//spawn boids
+	if ((m_keyboardState[DIK_B] & 0x80) && !(m_prevKeyboardState[DIK_B] & 0x80))
+	{
+		controller->SpawnBoid(1);
+	}
+
+	if ((m_keyboardState[DIK_R] & 0x80) && !(m_prevKeyboardState[DIK_R] & 0x80))
+	{
+		controller->SpawnBoid(2);
+	}
+
 	//update all objects
 	for (list<GameObject *>::iterator it = m_GameObjects.begin(); it != m_GameObjects.end(); it++)
 	{
@@ -300,6 +311,8 @@ void Game::PlayTick()
 	{
 		(*it)->Tick(m_GD);
 	}
+
+	controller->Tick(m_GD);
 }
 
 void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext) 
@@ -317,6 +330,8 @@ void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext)
 	//update the constant buffer for the rendering of VBGOs
 	VBGO::UpdateConstantBuffer(m_DD);
 
+	controller->DrawBoids(m_DD);
+
 	//draw all objects
 	for (list<GameObject *>::iterator it = m_GameObjects.begin(); it != m_GameObjects.end(); it++)
 	{
@@ -329,6 +344,7 @@ void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext)
 	{
 		(*it)->Draw(m_DD2D);
 	}
+
 	m_DD2D->m_Sprites->End();
 
 	//drawing text screws up the Depth Stencil State, this puts it back again!

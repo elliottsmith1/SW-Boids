@@ -13,48 +13,50 @@ BoidController::BoidController(int num, std::string _fileName, ID3D11Device * _p
 	}
 }
 
-void BoidController::Tick(GameData* _GD, DrawData* _DD)
+void BoidController::Tick(GameData* _GD)
 {
 	for (int i = 0; i < boids.size(); i++)
 	{
-		boids[i]->runBoid(boids);
-	}
-
-	if (_GD->m_keyboardState[DIK_B] & 0x80)
-	{
-		for (int i = 0; i < boids.size(); i++)
+		if (boids[i]->GetActive())
 		{
-			if (boids[i]->GetActive() != true)
+			boids[i]->runBoid(boids, _GD);
+		}
+	}
+}
+
+void BoidController::DrawBoids(DrawData* _DD)
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (boids[i]->GetActive())
+		{
+			boids[i]->Draw(_DD);
+		}
+	}
+}
+
+void BoidController::SpawnBoid(int tag)
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (boids[i]->GetActive() != true)
+		{
+			boids[i]->SetActive(true);
+
+			switch (tag)
 			{
-				boids[i]->SetActive(true);
+			case 1:
 				boids[i]->SetTag(1);
-				return;
-			}
-		}
-	}
-
-	if (_GD->m_keyboardState[DIK_R] & 0x80)
-	{
-		for (int i = 0; i < boids.size(); i++)
-		{
-			if (boids[i]->GetActive() != true)
-			{
-				boids[i]->SetActive(true);
+				break;
+			case 2:
 				boids[i]->SetTag(2);
-				return;
+				break;
 			}
 		}
+		return;
 	}
-
-	Draw(_DD);
 }
 
-void BoidController::Draw(DrawData* _DD)
-{
-	for (int i = 0; i < boids.size(); i++)
-	{
-		boids[i]->Draw(_DD);
-	}
 
-}
+
 

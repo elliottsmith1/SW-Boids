@@ -16,8 +16,9 @@ public:
 	BoidController(int num, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
 	~BoidController() = default; 
 
-	void Tick(GameData* _GD, DrawData* _DD);
-	void Draw(DrawData* _DD);
+	void Tick(GameData* _GD);
+	void DrawBoids(DrawData* _DD);
+	void SpawnBoid(int tag);
 
 	std::vector<Boid*> boids;
 
