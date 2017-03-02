@@ -13,7 +13,7 @@ class Boid;
 class BoidController
 {
 public:
-	BoidController(int num, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
+	BoidController(int numBoids, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
 	~BoidController() = default; 
 
 	void Tick(GameData* _GD);

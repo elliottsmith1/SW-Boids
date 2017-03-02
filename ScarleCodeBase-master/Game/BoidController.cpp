@@ -2,11 +2,11 @@
 #include "GameData.h"
 #include "Boid.h"
 
-BoidController::BoidController(int num, std::string _fileName, ID3D11Device * _pd3dDevice, IEffectFactory * _EF)
+BoidController::BoidController(int numBoids, std::string _fileName, ID3D11Device * _pd3dDevice, IEffectFactory * _EF)
 {
-	boids.reserve(num);
+	boids.reserve(numBoids);
 
-	for (int i = 0; i < num; i++)
+	for (int i = 0; i < numBoids; i++)
 	{
 		boid = new Boid(_fileName, _pd3dDevice, _EF);
 		boids.push_back(boid);
@@ -28,7 +28,7 @@ void BoidController::DrawBoids(DrawData* _DD)
 {
 	for (int i = 0; i < boids.size(); i++)
 	{
-		if (boids[i]->GetActive())
+		//if (boids[i]->GetActive())
 		{
 			boids[i]->Draw(_DD);
 		}
@@ -50,6 +50,9 @@ void BoidController::SpawnBoid(int tag)
 				break;
 			case 2:
 				boids[i]->SetTag(2);
+				break;
+			default:
+				boids[i]->SetTag(1);
 				break;
 			}
 		}

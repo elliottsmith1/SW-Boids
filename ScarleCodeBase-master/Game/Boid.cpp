@@ -66,7 +66,7 @@ void Boid::updateBoid()
 	velocity += acceleration;
 
 	velocity = XMVector3Normalize(velocity);
-	//velocity.Normalize();
+
 	// Limit speed
 	velocity = XMVector3ClampLength(velocity, 0, maxspeed);
 
@@ -91,17 +91,19 @@ Vector3 Boid::seek(Vector3 target)
 
 Vector3 Boid::boundingBox()
 {
-	int Xmin = 1, Xmax = 25, Ymin = -1, Ymax = 1, Zmin = 1, Zmax = 25;
+	int Xmin = -5, Xmax = 5, Ymin = -1, Ymax = 1, Zmin = -5, Zmax = 5;
 	Vector3 v = Vector3(0, 0, 0);
+
+	float returnNum = 1.0f;
 
 	if (m_pos.x < Xmin)
 	{
-		v.x += 0.5f;
+		v.x += returnNum;
 	}
 
 	else if (m_pos.x > Xmax)
 	{
-		v.x += -0.5f;
+		v.x -= returnNum;
 
 	}
 	if (m_pos.y < Ymin)
@@ -116,12 +118,12 @@ Vector3 Boid::boundingBox()
 
 	if (m_pos.z < Zmin)
 	{
-		v.z += 0.5f;
+		v.z += returnNum;
 	}
 
 	else if (m_pos.z > Zmax)
 	{
-		v.z += -0.5f;
+		v.z -= returnNum;
 	}
 
 	return v;
