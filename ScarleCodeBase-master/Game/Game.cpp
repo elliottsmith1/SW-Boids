@@ -293,7 +293,8 @@ void Game::PlayTick()
 	}
 
 	//spawn boids
-	if ((m_keyboardState[DIK_B] & 0x80) && !(m_prevKeyboardState[DIK_B] & 0x80))
+	//if ((m_keyboardState[DIK_B] & 0x80) && !(m_prevKeyboardState[DIK_B] & 0x80))
+	if (m_keyboardState[DIK_B] & 0x80)
 	{
 		controller->SpawnBoid(1);
 	}

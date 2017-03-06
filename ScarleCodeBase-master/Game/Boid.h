@@ -15,7 +15,7 @@ public:
 	void flock(vector<Boid*> boids);
 	void updateBoid();
 	Vector3 seek(Vector3 target);
-	Vector3 boundingBox();
+	void boundingBox();
 	Vector3 separate(vector<Boid*> boids);
 	Vector3 align(vector<Boid*> boids);
 	Vector3 cohesion(vector<Boid*> boids);
@@ -31,6 +31,8 @@ protected:
 	Vector3 position;
 	Vector3 velocity;
 	Vector3 acceleration;
+	Vector3 maxSpeedV;
+	Vector3 maxForceV;
 	float r;
 	float maxforce;    
 	float maxspeed;   

@@ -22,7 +22,10 @@ Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : C
 
 	float maxforce = 0.03f;
 
-	float maxspeed = 0.5f;
+	float maxspeed = 0.05f;
+
+	maxSpeedV = Vector3(maxspeed, maxspeed, maxspeed);
+	maxForceV = Vector3(maxforce, maxforce, maxforce);
 }
 
 void Boid::Tick(GameData* _GD)
@@ -71,6 +74,7 @@ void Boid::updateBoid()
 
 	// Limit speed
 	//velocity = XMVector3ClampLength(velocity, 0, maxspeed);
+	velocity = XMVector3ClampLengthV(velocity, Vector3::Zero, maxSpeedV);
 
 	m_pos += velocity;
 
@@ -88,55 +92,44 @@ Vector3 Boid::seek(Vector3 target)
 
 	// Steering = Desired minus Velocity
 	Vector3 steer = (desired - velocity);
-	steer = XMVector3ClampLength(steer, 0, maxforce);
+	steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
 
 	return steer;
 }
 
-Vector3 Boid::boundingBox()
+void Boid::boundingBox()
 {
-	int Xmin = -50, Xmax = 50, Ymin = -1, Ymax = 1, Zmin = -50, Zmax = 50;
-	Vector3 v = Vector3(0, 0, 0);
-
-	float returnNum = 2.0f;
+	int Xmin = -50, Xmax = 50, Zmin = -50, Zmax = 50;
 
 	if (m_pos.x < Xmin)
 	{
-		v.x += returnNum;
+		m_pos.x += 100;
 	}
 
 	else if (m_pos.x > Xmax)
 	{
-		v.x -= returnNum;
-
+		m_pos.x -= 100;
 	}
 
-	if (m_pos.y < Ymin)
+	if ((m_pos.y < 0) || (m_pos.y > 0))
 	{
-		v.y += 0.1f;
-	}
-
-	else if (m_pos.y > Ymax)
-	{
-		v.y += -0.1f;
+		m_pos.y = 0;
 	}
 
 	if (m_pos.z < Zmin)
 	{
-		v.z += returnNum;
+		m_pos.z += 100;
 	}
 
 	else if (m_pos.z > Zmax)
 	{
-		v.z -= returnNum;
+		m_pos.z -= 100; 
 	}
-
-	return v;
 }
 
 Vector3 Boid::separate(vector<Boid*> boids)
 {
-	float desiredseparation = 0.3f;
+	float desiredseparation = 0.5f;
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
@@ -169,14 +162,14 @@ Vector3 Boid::separate(vector<Boid*> boids)
 		steer = XMVector3Normalize(steer);
 		steer *= maxspeed;
 		steer -= velocity;
-		steer = XMVector3ClampLength(steer, 0, maxforce);
+		steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
 	}
 	return steer;
 }
 
 Vector3 Boid::align(vector<Boid*> boids)
 {
-	float neighbordist = 2.5f;
+	float neighbordist = 5.0f;
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -211,7 +204,7 @@ Vector3 Boid::align(vector<Boid*> boids)
 
 Vector3 Boid::cohesion(vector<Boid*> boids)
 {
-	float neighbordist = 2.5f;
+	float neighbordist = 5.0f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
