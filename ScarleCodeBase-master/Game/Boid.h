@@ -6,9 +6,9 @@ class Boid : public CMOGO
 
 public:
 	Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
-	~Boid();
+	~Boid() = default;
 
-	virtual void Tick(GameData* _GD) override;
+	void Tick(GameData* _GD) override;
 
 	void runBoid(vector<Boid*> boids, GameData* _GD);
 	void applyForce(Vector3 force);

@@ -1,26 +1,28 @@
 #include "Boid.h"
 #include "BoidController.h"
 #include "GameData.h"
+#include <iostream>
 
 Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : CMOGO(_fileName, _pd3dDevice, _EF)
 {
 	acceleration = Vector3(0, 0, 0);
 
 	float angle = 0.1 + (rand() % (int)(359 - 0.1 + 1));
-	velocity = Vector3(cos(angle), 0, sin(angle));
+	velocity = Vector3(cos(angle), 0, tan(angle));
 
-	m_pos = Vector3(0, 1, 0);
+	float pos1 = -50 + (rand() % (int)(50 - -50 + 1));
+	float pos2 = -50 + (rand() % (int)(50 - -50 + 1));
+
+	std::cout << pos1 << ", ";
+	std::cout << pos2 << std::endl;
+
+	m_pos = Vector3(pos1, 1, pos2);
 	position = m_pos;
 	r = 2.0f;
 
 	float maxforce = 0.03f;
 
-	float maxspeed = 0.02f;
-}
-
-Boid::~Boid()
-{
-	//
+	float maxspeed = 0.5f;
 }
 
 void Boid::Tick(GameData* _GD)
@@ -68,17 +70,19 @@ void Boid::updateBoid()
 	velocity = XMVector3Normalize(velocity);
 
 	// Limit speed
-	velocity = XMVector3ClampLength(velocity, 0, maxspeed);
+	//velocity = XMVector3ClampLength(velocity, 0, maxspeed);
 
 	m_pos += velocity;
-	// Reset accelertion to 0 each cycle
+
+	// Reset acceleration to 0 each cycle
 	acceleration *= 0;
 }
 
 Vector3 Boid::seek(Vector3 target)
 {
 	Vector3 desired = (target - m_pos);  // A vector pointing from the position to the target
-													  // Scale to maximum speed
+	
+	// Scale to maximum speed
 	desired = XMVector3Normalize(desired);
 	desired *= maxspeed;
 
@@ -91,10 +95,10 @@ Vector3 Boid::seek(Vector3 target)
 
 Vector3 Boid::boundingBox()
 {
-	int Xmin = -5, Xmax = 5, Ymin = -1, Ymax = 1, Zmin = -5, Zmax = 5;
+	int Xmin = -50, Xmax = 50, Ymin = -1, Ymax = 1, Zmin = -50, Zmax = 50;
 	Vector3 v = Vector3(0, 0, 0);
 
-	float returnNum = 1.0f;
+	float returnNum = 2.0f;
 
 	if (m_pos.x < Xmin)
 	{
@@ -106,6 +110,7 @@ Vector3 Boid::boundingBox()
 		v.x -= returnNum;
 
 	}
+
 	if (m_pos.y < Ymin)
 	{
 		v.y += 0.1f;
@@ -131,22 +136,22 @@ Vector3 Boid::boundingBox()
 
 Vector3 Boid::separate(vector<Boid*> boids)
 {
-	float desiredseparation = 1.0f;
+	float desiredseparation = 0.3f;
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
 	for (int i = 0; i < boids.size(); i++)
 	{
-		float d = Vector3::Distance(m_pos, boids[i]->GetPos());
+		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
 
 		//if (checkColour(this, boids[i]))
 		{
-			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < desiredseparation)
+			if ((dis > 0) && (dis < desiredseparation))
 			{
 				// Calculate vector pointing away from neighbor
 				Vector3 diff = (m_pos - boids[i]->GetPos());
 				diff = XMVector3Normalize(diff);
-				diff = (diff / d);        // Weight by distance
+				diff = (diff / dis);        // Weight by distance
 				steer += diff;
 				count++;            // Keep track of how many
 			}

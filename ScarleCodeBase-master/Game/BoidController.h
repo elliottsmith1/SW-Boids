@@ -14,7 +14,7 @@ class BoidController
 {
 public:
 	BoidController(int numBoids, std::string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF);
-	~BoidController() = default; 
+	~BoidController(); 
 
 	void Tick(GameData* _GD);
 	void DrawBoids(DrawData* _DD);

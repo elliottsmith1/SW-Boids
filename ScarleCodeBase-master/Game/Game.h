@@ -71,6 +71,7 @@ protected:
 	//sound stuff
 	std::unique_ptr<AudioEngine> m_audioEngine;
 
+	//boid controller
 	std::unique_ptr<BoidController> controller;
 
 	//Tick functions for each state
