@@ -10,19 +10,18 @@ Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : C
 	float angle = 0.1 + (rand() % (int)(359 - 0.1 + 1));
 	velocity = Vector3(cos(angle), 0, tan(angle));
 
-	float pos1 = -50 + (rand() % (int)(50 - -50 + 1));
-	float pos2 = -50 + (rand() % (int)(50 - -50 + 1));
+	float pos1 = -50 + (rand() % (int)(160 - -50 + 1));
+	float pos2 = -50 + (rand() % (int)(160 - -50 + 1));
 
-	std::cout << pos1 << ", ";
-	std::cout << pos2 << std::endl;
+	/*std::cout << pos1 << ", ";
+	std::cout << pos2 << std::endl;*/
 
 	m_pos = Vector3(pos1, 1, pos2);
 	position = m_pos;
 	r = 2.0f;
 
-	float maxforce = 0.03f;
-
-	float maxspeed = 0.05f;
+	maxforce = 0.03f;
+	maxspeed = 0.2f;
 
 	maxSpeedV = Vector3(maxspeed, maxspeed, maxspeed);
 	maxForceV = Vector3(maxforce, maxforce, maxforce);
@@ -55,7 +54,7 @@ void Boid::flock(vector<Boid*> boids)
 	Vector3 coh = cohesion(boids);   // Cohesion
 
 	// Arbitrarily weight these forces
-	sep *= 1.5f;
+	sep *= 1.3f;
 	ali *= 1.0f;
 	coh *= 1.0f;
 
@@ -99,16 +98,16 @@ Vector3 Boid::seek(Vector3 target)
 
 void Boid::boundingBox()
 {
-	int Xmin = -50, Xmax = 50, Zmin = -50, Zmax = 50;
+	int Xmin = -50, Xmax = 160, Zmin = -50, Zmax = 160;
 
 	if (m_pos.x < Xmin)
 	{
-		m_pos.x += 100;
+		m_pos.x += 220;
 	}
 
 	else if (m_pos.x > Xmax)
 	{
-		m_pos.x -= 100;
+		m_pos.x -= 220;
 	}
 
 	if ((m_pos.y < 0) || (m_pos.y > 0))
@@ -118,18 +117,18 @@ void Boid::boundingBox()
 
 	if (m_pos.z < Zmin)
 	{
-		m_pos.z += 100;
+		m_pos.z += 220;
 	}
 
 	else if (m_pos.z > Zmax)
 	{
-		m_pos.z -= 100; 
+		m_pos.z -= 220; 
 	}
 }
 
 Vector3 Boid::separate(vector<Boid*> boids)
 {
-	float desiredseparation = 0.5f;
+	float desiredseparation = 7.0f;
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
@@ -169,23 +168,24 @@ Vector3 Boid::separate(vector<Boid*> boids)
 
 Vector3 Boid::align(vector<Boid*> boids)
 {
-	float neighbordist = 5.0f;
+	float neighbordist = 10.0f;
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
 	{
 		//if (checkColour(this, boids[i]))
+		if (boids[i] != this)
 		{
-			/*float d = Vector3::Distance(m_pos, boids[i]->GetPos()) < 10;
-			if ((d > 0) && (d < neighbordist))*/
+			float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
 
-			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
+			if ((dis > 0) && (dis < neighbordist))
 			{
 				sum += boids[i]->GetVelocity();
 				count++;
 			}
 		}
 	}
+
 	if (count > 0)
 	{
 		sum /= ((float)count);
@@ -193,9 +193,10 @@ Vector3 Boid::align(vector<Boid*> boids)
 		sum = XMVector3Normalize(sum);
 		sum *= maxspeed;
 		Vector3 steer = (sum - velocity);
-		steer = XMVector3ClampLength(steer, 0, maxforce);
+		steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
 		return steer;
 	}
+
 	else
 	{
 		return Vector3(0, 0, 0);
@@ -204,12 +205,13 @@ Vector3 Boid::align(vector<Boid*> boids)
 
 Vector3 Boid::cohesion(vector<Boid*> boids)
 {
-	float neighbordist = 5.0f;
+	float neighbordist = 10.0f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
 	{
 		//if (checkColour(this, boids[i]))
+		if (boids[i] != this)
 		{
 			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
 			{

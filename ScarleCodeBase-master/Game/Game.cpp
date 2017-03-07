@@ -82,8 +82,8 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	float AR = (float)width / (float)height;
 
 	//create a base camera
-	m_cam = new Camera(0.25f * XM_PI, AR, 1.0f, 10000.0f, Vector3::UnitY, Vector3::Zero);
-	m_cam->SetPos(Vector3(0.0f, 100.0f, 100.0f));
+	m_cam = new Camera(0.25f * XM_PI, AR, 1.0f, 10000.0f, Vector3::UnitY, Vector3(50, 0, 50));
+	m_cam->SetPos(Vector3(50.0f, 125.0f, 275.0f));
 	m_cam->SetPos(m_cam->GetPos() - Vector3(0, 0, -15));
 	m_GameObjects.push_back(m_cam);
 
@@ -92,16 +92,36 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	m_GameObjects.push_back(m_light);
 
 	//create terrain
-	FileVBGO* terrainBox = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
-	terrainBox->SetScale(3, 0, 3);
-	m_GameObjects.push_back(terrainBox);
+	FileVBGO* terrainBox1 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
+	terrainBox1->SetScale(3, 0, 3);
+	m_GameObjects.push_back(terrainBox1);
+
+	FileVBGO* terrainBox2 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
+	terrainBox2->SetScale(3, 0, 3);
+	m_GameObjects.push_back(terrainBox2);
+	terrainBox2->SetPos(terrainBox2->GetPos() + Vector3(110, 0, 0));
+
+	FileVBGO* terrainBox3 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
+	terrainBox3->SetScale(3, 0, 3);
+	m_GameObjects.push_back(terrainBox3);
+	terrainBox3->SetPos(terrainBox3->GetPos() + Vector3(110, 0, 110));
+
+	FileVBGO* terrainBox4 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
+	terrainBox4->SetScale(3, 0, 3);
+	m_GameObjects.push_back(terrainBox4);
+	terrainBox4->SetPos(terrainBox4->GetPos() + Vector3(0, 0, 110));
+
+	FileVBGO* cameraPoint = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
+	cameraPoint->SetScale(0, 0, 0);
+	m_GameObjects.push_back(cameraPoint);
+	cameraPoint->SetPos(cameraPoint->GetPos() + Vector3(100, 0, 100));
 
 	////add Player
 	/*Player* pPlayer = new Player("BirdModelV1.cmo", _pd3dDevice, m_fxFactory);
 	m_GameObjects.push_back(pPlayer);*/
 
 	//add a secondary camera
-	m_TPScam = new TPSCamera(0.25f * XM_PI, AR, 1.0f, 10000.0f, terrainBox, Vector3::UnitY, Vector3(0.0f, 10.0f, 50.0f));
+	m_TPScam = new TPSCamera(0.25f * XM_PI, AR, 1.0f, 10000.0f, cameraPoint, Vector3::UnitY, Vector3(50.0f, 10.0f, 100.0f));
 	m_GameObjects.push_back(m_TPScam);
 
 	//create DrawData struct and populate its pointers
@@ -174,7 +194,13 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//text->SetColour(Color((float*)&Colors::Yellow));
 	//m_GameObject2Ds.push_back(text);
 
-	controller = std::make_unique<BoidController>(10, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
+	controller = std::make_unique<BoidController>(50, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
+
+	VBCube* cube = new VBCube();
+	cube->init(11, _pd3dDevice);
+	cube->SetPos(Vector3(50.0f, 0.0f, 100.0f));
+	cube->SetScale(4.0f);
+	m_GameObjects.push_back(cube);
 };
 
 
