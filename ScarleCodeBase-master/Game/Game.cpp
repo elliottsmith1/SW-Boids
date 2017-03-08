@@ -201,6 +201,8 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	cube->SetPos(Vector3(50.0f, 0.0f, 100.0f));
 	cube->SetScale(4.0f);
 	m_GameObjects.push_back(cube);
+
+	cube->SetYaw(-45);
 };
 
 
@@ -300,6 +302,7 @@ bool Game::Tick()
 		break;
 	}
 	
+
 	return true;
 };
 

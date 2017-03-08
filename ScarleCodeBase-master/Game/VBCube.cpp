@@ -39,7 +39,7 @@ void VBCube::init(int _size, ID3D11Device* GD)
 			m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 0.0f);
 
 			//front
-			/*m_vertices[vert].Color = Color(1.0f, 1.0f, 0.0f, 1.0f);
+			m_vertices[vert].Color = Color(1.0f, 1.0f, 0.0f, 1.0f);
 			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 0.0f, 1.0f);
 			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
@@ -51,24 +51,67 @@ void VBCube::init(int _size, ID3D11Device* GD)
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 0.0f, 1.0f);
 			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 0.0f, 1.0f);
-			m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);*/
+			m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);
 
 			//side1
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
-			m_vertices[vert++].Pos = Vector3(1.0f, 1.0f, 0.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
-			m_vertices[vert++].Pos = Vector3(1.0f, 1.0f, 4.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 1.0f);			
+
+			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 0.0f);
+			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
+			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 1.0f);						
+
+			//side2
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 0.0f);			
+			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 0.0f);
+
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 0.0f);
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);
+
+			//top
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
 			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 0.0f);
-
 			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
-			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 0.0f);
-			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
-			m_vertices[vert++].Pos = Vector3(1.0f, 1.0f, 4.0f);
-			m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
-			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 4.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
 
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
+			m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
 
+			////bottom
+			//m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			//m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+			//m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			//m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 0.0f);
+			//m_vertices[vert].Color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+			//m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 0.0f);
+
+			//m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			//m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+			//m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			//m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 0.0f);
+			//m_vertices[vert].Color = Color(0.0f, 1.0f, 1.0f, 1.0f);
+			//m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);
 
 	//carry out some kind of transform on these vertices to make this object more interesting
 	Transform();
