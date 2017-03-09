@@ -3,15 +3,123 @@
 #include "GameData.h"
 #include <iostream>
 
-Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : CMOGO(_fileName, _pd3dDevice, _EF)
+Boid::Boid(ID3D11Device* _pd3dDevice, int _id)
 {
+	ID = _id;
+	int numVerts = 24;
+	m_numPrims = numVerts / 3;
+	myVertex* m_vertices = new myVertex[numVerts];
+	WORD* indices = new WORD[numVerts];
+
+	//as using the standard VB shader set the tex-coords somewhere safe
+	for (int i = 0; i<numVerts; i++)
+	{
+		indices[i] = i;
+		m_vertices[i].texCoord = Vector2::One;
+	}
+
+	//in each loop create the two traingles for the matching sub-square on each of the six faces
+	int vert = 0;
+
+	//back			
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 0.0f);
+
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 0.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);
+
+	//front
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 1.0f);
+
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);
+
+	//side3
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 0.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
+
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 0.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
+
+	//top
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 0.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 4.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 4.0f, 1.0f);
+
+	//bottom
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 1.0f);
+	m_vertices[vert].Color = colour;
+	m_vertices[vert++].Pos = Vector3(0.0f, 0.0f, 0.0f);
+
+
+	//calculate the normals for the basic lighting in the base shader
+	for (int i = 0; i<m_numPrims; i++)
+	{
+		WORD V1 = 3 * i;
+		WORD V2 = 3 * i + 1;
+		WORD V3 = 3 * i + 2;
+
+		//build normals
+		Vector3 norm;
+		Vector3 vec1 = m_vertices[V1].Pos - m_vertices[V2].Pos;
+		Vector3 vec2 = m_vertices[V3].Pos - m_vertices[V2].Pos;
+		norm = vec1.Cross(vec2);
+		norm.Normalize();
+
+		m_vertices[V1].Norm = norm;
+		m_vertices[V2].Norm = norm;
+		m_vertices[V3].Norm = norm;
+	}
+
+
+	BuildIB(_pd3dDevice, indices);
+	BuildVB(_pd3dDevice, numVerts, m_vertices);
+
+	delete[] indices;    //this is no longer needed as this is now in the index Buffer
+	delete[] m_vertices; //this is no longer needed as this is now in the Vertex Buffer
+	m_vertices = nullptr;
+
 	acceleration = Vector3(0, 0, 0);
 
 	float angle = 0.1 + (rand() % (int)(359 - 0.1 + 1));
+
+	SetYaw(angle);
+
 	velocity = Vector3(cos(angle), 0, tan(angle));
 
-	float pos1 = -50 + (rand() % (int)(160 - -50 + 1));
-	float pos2 = -50 + (rand() % (int)(160 - -50 + 1));
+	float pos1 = -50 + (rand() % (int)(660 - -50 + 1));
+	float pos2 = -50 + (rand() % (int)(660 - -50 + 1));
 
 	/*std::cout << pos1 << ", ";
 	std::cout << pos2 << std::endl;*/
@@ -21,18 +129,20 @@ Boid::Boid(string _fileName, ID3D11Device* _pd3dDevice, IEffectFactory* _EF) : C
 	r = 2.0f;
 
 	maxforce = 0.03f;
-	maxspeed = 0.2f;
+	maxspeed = 0.5f;
 
 	maxSpeedV = Vector3(maxspeed, maxspeed, maxspeed);
 	maxForceV = Vector3(maxforce, maxforce, maxforce);
+
+	m_scale *= 3;
 }
 
 void Boid::Tick(GameData* _GD)
 {
-	CMOGO::Tick(_GD);
+	VBGO::Tick(_GD);
 }
 
-void Boid::runBoid(vector<Boid*> boids, GameData* _GD)
+void Boid::runBoid(std::vector<Boid*> boids, GameData* _GD)
 {
 	flock(boids);
 	updateBoid();
@@ -47,14 +157,14 @@ void Boid::applyForce(Vector3 force)
 	acceleration += force;
 }
 
-void Boid::flock(vector<Boid*> boids)
+void Boid::flock(std::vector<Boid*> boids)
 {
 	Vector3 sep = separate(boids);   // Separation
 	Vector3 ali = align(boids);      // Alignment
 	Vector3 coh = cohesion(boids);   // Cohesion
 
 	// Arbitrarily weight these forces
-	sep *= 1.3f;
+	sep *= 1.0f;
 	ali *= 1.0f;
 	coh *= 1.0f;
 
@@ -98,16 +208,16 @@ Vector3 Boid::seek(Vector3 target)
 
 void Boid::boundingBox()
 {
-	int Xmin = -50, Xmax = 160, Zmin = -50, Zmax = 160;
+	int Xmin = -50, Xmax = 600, Zmin = -50, Zmax = 600;
 
 	if (m_pos.x < Xmin)
 	{
-		m_pos.x += 220;
+		m_pos.x += 600;
 	}
 
 	else if (m_pos.x > Xmax)
 	{
-		m_pos.x -= 220;
+		m_pos.x -= 600;
 	}
 
 	if ((m_pos.y < 0) || (m_pos.y > 0))
@@ -117,16 +227,16 @@ void Boid::boundingBox()
 
 	if (m_pos.z < Zmin)
 	{
-		m_pos.z += 220;
+		m_pos.z += 600;
 	}
 
 	else if (m_pos.z > Zmax)
 	{
-		m_pos.z -= 220; 
+		m_pos.z -= 600; 
 	}
 }
 
-Vector3 Boid::separate(vector<Boid*> boids)
+Vector3 Boid::separate(std::vector<Boid*> boids)
 {
 	float desiredseparation = 7.0f;
 	Vector3 steer = Vector3(0, 0, 0);
@@ -166,9 +276,9 @@ Vector3 Boid::separate(vector<Boid*> boids)
 	return steer;
 }
 
-Vector3 Boid::align(vector<Boid*> boids)
+Vector3 Boid::align(std::vector<Boid*> boids)
 {
-	float neighbordist = 10.0f;
+	float neighbordist = 15.0f;
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -203,9 +313,9 @@ Vector3 Boid::align(vector<Boid*> boids)
 	}
 }
 
-Vector3 Boid::cohesion(vector<Boid*> boids)
+Vector3 Boid::cohesion(std::vector<Boid*> boids)
 {
-	float neighbordist = 10.0f;
+	float neighbordist = 15.0f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -258,6 +368,16 @@ int Boid::GetTag()
 void Boid::SetTag(int num)
 {
 	tag = num; 
+
+	if (tag == 1)
+	{
+		colour = Vector4(1, 0, 0, 0);
+	}
+
+	else if (tag == 2)
+	{
+		colour = Vector4(0, 0, 0, 1);
+	}
 }
 
 void Boid::SetActive(bool act)
@@ -268,4 +388,9 @@ void Boid::SetActive(bool act)
 bool Boid::GetActive()
 {
 	return active;
+}
+
+int Boid::GetID()
+{
+	return ID;
 }
