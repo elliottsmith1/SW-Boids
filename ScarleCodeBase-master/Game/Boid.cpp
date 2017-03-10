@@ -21,6 +21,18 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id)
 	//in each loop create the two traingles for the matching sub-square on each of the six faces
 	int vert = 0;
 
+	if (ID % 2 == 0)
+	{
+		colour = Vector4(1, 0, 0, 1);
+		tag = 1;
+	}
+
+	else
+	{
+		colour = Vector4(0, 0, 1, 0);
+		tag = 2;
+	}
+
 	//back			
 	m_vertices[vert].Color = colour;
 	m_vertices[vert++].Pos = Vector3(1.0f, 0.0f, 1.0f);
@@ -162,11 +174,11 @@ void Boid::flock(std::vector<Boid*> boids)
 	Vector3 sep = separate(boids);   // Separation
 	Vector3 ali = align(boids);      // Alignment
 	Vector3 coh = cohesion(boids);   // Cohesion
-
+		
 	// Arbitrarily weight these forces
-	sep *= 1.0f;
+	sep *= 3.0f;
 	ali *= 1.0f;
-	coh *= 1.0f;
+	coh *= 2.0f;
 
 	// Add the force vectors to acceleration
 	applyForce(sep);
@@ -246,17 +258,14 @@ Vector3 Boid::separate(std::vector<Boid*> boids)
 	{
 		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
 
-		//if (checkColour(this, boids[i]))
+		if ((dis > 0) && (dis < desiredseparation))
 		{
-			if ((dis > 0) && (dis < desiredseparation))
-			{
-				// Calculate vector pointing away from neighbor
-				Vector3 diff = (m_pos - boids[i]->GetPos());
-				diff = XMVector3Normalize(diff);
-				diff = (diff / dis);        // Weight by distance
-				steer += diff;
-				count++;            // Keep track of how many
-			}
+			// Calculate vector pointing away from neighbor
+			Vector3 diff = (m_pos - boids[i]->GetPos());
+			diff = XMVector3Normalize(diff);
+			diff = (diff / dis);        // Weight by distance
+			steer += diff;
+			count++;            // Keep track of how many
 		}
 	}
 	// Average -- divide by how many
@@ -283,15 +292,17 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
 	{
-		//if (checkColour(this, boids[i]))
-		if (boids[i] != this)
+		if (boids[i] != this)		
 		{
-			float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
-
-			if ((dis > 0) && (dis < neighbordist))
+			if (checkColour(this, boids[i]))
 			{
-				sum += boids[i]->GetVelocity();
-				count++;
+				float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
+
+				if ((dis > 0) && (dis < neighbordist))
+				{
+					sum += boids[i]->GetVelocity();
+					count++;
+				}
 			}
 		}
 	}
@@ -320,13 +331,15 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
 	{
-		//if (checkColour(this, boids[i]))
-		if (boids[i] != this)
+		if (boids[i] != this)		
 		{
-			if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
+			if (checkColour(this, boids[i]))
 			{
-				sum += boids[i]->GetPos(); 
-				count++;
+				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
+				{
+					sum += boids[i]->GetPos();
+					count++;
+				}
 			}
 		}
 	}
@@ -342,9 +355,9 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 	}
 }
 
-bool Boid::checkColour(Boid b, Boid c)
+bool Boid::checkColour(Boid* b, Boid* c)
 {
-	if (b.tag == c.tag)
+	if ((*b).tag == (*c).tag)
 	{
 		return true;
 	}

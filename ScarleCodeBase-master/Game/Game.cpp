@@ -88,7 +88,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	m_GameObjects.push_back(m_cam);
 
 	//create a base light
-	m_light = new Light(Vector3(0.0f, 100.0f, 160.0f), Color(1.0f, 1.0f, 1.0f, 1.0f), Color(0.4f, 0.1f, 0.1f, 1.0f));
+	m_light = new Light(Vector3(300.0f, 100.0f, 300.0f), Color(1.0f, 1.0f, 1.0f, 1.0f), Color(0.4f, 0.1f, 0.1f, 1.0f));
 	m_GameObjects.push_back(m_light);
 
 	int posX = 0;
@@ -213,7 +213,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//text->SetColour(Color((float*)&Colors::Yellow));
 	//m_GameObject2Ds.push_back(text);
 
-	controller = std::make_unique<BoidController>(1000, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
+	controller = std::make_unique<BoidController>(800, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
 };
 
 
