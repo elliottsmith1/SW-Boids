@@ -21,6 +21,7 @@ public:
 	Vector3 separate(std::vector<Boid*> boids);
 	Vector3 align(std::vector<Boid*> boids);
 	Vector3 cohesion(std::vector<Boid*> boids);
+	Vector3 repel(std::vector<Boid*> boids);
 	bool checkColour(Boid* b, Boid* c);
 	Vector3 GetVelocity();
 	int GetTag();

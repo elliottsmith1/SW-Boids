@@ -174,16 +174,19 @@ void Boid::flock(std::vector<Boid*> boids)
 	Vector3 sep = separate(boids);   // Separation
 	Vector3 ali = align(boids);      // Alignment
 	Vector3 coh = cohesion(boids);   // Cohesion
+	Vector3 rep = repel(boids);
 		
 	// Arbitrarily weight these forces
-	sep *= 3.0f;
-	ali *= 1.0f;
-	coh *= 2.0f;
+	sep *= 7.0f;
+	ali *= 2.0f;
+	coh *= 1.0f;
+	rep *= 1.0f;
 
 	// Add the force vectors to acceleration
 	applyForce(sep);
 	applyForce(ali);
 	applyForce(coh);
+	applyForce(rep);
 }
 
 void Boid::updateBoid()
@@ -250,7 +253,7 @@ void Boid::boundingBox()
 
 Vector3 Boid::separate(std::vector<Boid*> boids)
 {
-	float desiredseparation = 7.0f;
+	float desiredseparation = 10.0f;
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
@@ -285,9 +288,49 @@ Vector3 Boid::separate(std::vector<Boid*> boids)
 	return steer;
 }
 
+Vector3 Boid::repel(std::vector<Boid*> boids)
+{
+	float desiredseparation = 100.0f;
+	Vector3 steer = Vector3(0, 0, 0);
+	int count = 0;
+	// For every boid in the system, check if it's too close
+	for (int i = 0; i < boids.size(); i++)
+	{
+		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
+
+		if ((dis > 0) && (dis < desiredseparation))
+		{
+			if (!checkColour(this, boids[i]))
+			{
+				// Calculate vector pointing away from neighbor
+				Vector3 diff = (m_pos - boids[i]->GetPos());
+				diff = XMVector3Normalize(diff);
+				diff = (diff / dis);        // Weight by distance
+				steer += diff;
+				count++;            // Keep track of how many
+			}
+		}
+	}
+	// Average -- divide by how many
+	if (count > 0)
+	{
+		steer /= ((float)count);
+	}
+
+	// As long as the vector is greater than 0
+	if (steer.Length() > 0)
+	{
+		steer = XMVector3Normalize(steer);
+		steer *= maxspeed;
+		steer -= velocity;
+		steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
+	}
+	return steer;
+}
+
 Vector3 Boid::align(std::vector<Boid*> boids)
 {
-	float neighbordist = 15.0f;
+	float neighbordist = 20.0f;
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -326,7 +369,7 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 
 Vector3 Boid::cohesion(std::vector<Boid*> boids)
 {
-	float neighbordist = 15.0f;
+	float neighbordist = 20.0f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
