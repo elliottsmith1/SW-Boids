@@ -85,6 +85,28 @@ void BoidController::SpawnBoid(int tag)
 	}
 }
 
+void BoidController::groupBoids()
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (!boids[i]->getGrouping())
+		{
+			boids[i]->setGrouping(true);
+		}
+	}
+}
+
+void BoidController::ungroupBoids()
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (boids[i]->getGrouping())
+		{
+			boids[i]->setGrouping(false);
+		}
+	}
+}
+
 
 
 

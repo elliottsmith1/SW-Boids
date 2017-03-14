@@ -22,6 +22,7 @@ public:
 	Vector3 align(std::vector<Boid*> boids);
 	Vector3 cohesion(std::vector<Boid*> boids);
 	Vector3 repel(std::vector<Boid*> boids);
+	void applyGrouping();
 	bool checkColour(Boid* b, Boid* c);
 	Vector3 GetVelocity();
 	int GetTag();
@@ -29,6 +30,8 @@ public:
 	void SetActive(bool act);
 	bool GetActive();
 	int GetID();
+	void setGrouping(bool _group);
+	bool getGrouping();
 
 protected:
 	myVertex* m_vertices;
@@ -42,6 +45,7 @@ protected:
 	float maxspeed;   
 	int tag = 1;
 	bool active = false;
+	bool grouping = false;
 	int ID = 0;
 	Vector4 colour = Vector4(1, 0, 0, 1);
 };

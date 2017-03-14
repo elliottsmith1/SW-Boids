@@ -171,10 +171,10 @@ void Boid::applyForce(Vector3 force)
 
 void Boid::flock(std::vector<Boid*> boids)
 {
-	Vector3 sep = separate(boids, 10);   // Separation
-	Vector3 ali = align(boids);      // Alignment
-	Vector3 coh = cohesion(boids);   // Cohesion
-	Vector3 rep = separate(boids, 100);
+	Vector3 sep = separate(boids, 10);		// Separation
+	Vector3 ali = align(boids);				// Alignment
+	Vector3 coh = cohesion(boids);			// Cohesion
+	Vector3 rep = separate(boids, 100);		// Repel
 		
 	// Arbitrarily weight these forces
 	sep *= 5.0f;
@@ -187,6 +187,11 @@ void Boid::flock(std::vector<Boid*> boids)
 	applyForce(ali);
 	applyForce(coh);
 	applyForce(rep);
+
+	if (grouping)
+	{
+		applyGrouping();
+	}
 }
 
 void Boid::updateBoid()
@@ -343,6 +348,19 @@ Vector3 Boid::repel(std::vector<Boid*> boids)
 	return steer;
 }
 
+void Boid::applyGrouping()
+{
+	if (ID % 2 == 0)
+	{
+		applyForce(seek(Vector3(100, 0, 100)) * 2);
+	}
+
+	else
+	{
+		applyForce(seek(Vector3(400, 0, 400)) * 2);
+	}
+}
+
 Vector3 Boid::align(std::vector<Boid*> boids)
 {
 	float neighbordist = 30.0f;
@@ -410,7 +428,7 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 	else
 	{
 		return Vector3(0, 0, 0);
-	}
+	}	
 }
 
 bool Boid::checkColour(Boid* b, Boid* c)
@@ -464,4 +482,14 @@ bool Boid::GetActive()
 int Boid::GetID()
 {
 	return ID;
+}
+
+void Boid::setGrouping(bool _group)
+{
+	grouping = _group;
+}
+
+bool Boid::getGrouping()
+{
+	return grouping;
 }

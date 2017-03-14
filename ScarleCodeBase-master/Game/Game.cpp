@@ -339,9 +339,14 @@ void Game::PlayTick()
 		controller->SpawnBoid(1);
 	}
 
-	if ((m_keyboardState[DIK_R] & 0x80) && !(m_prevKeyboardState[DIK_R] & 0x80))
+	if ((m_keyboardState[DIK_G] & 0x80) && !(m_prevKeyboardState[DIK_G] & 0x80))
 	{
-		controller->SpawnBoid(2);
+		controller->groupBoids();
+	}
+
+	if ((m_keyboardState[DIK_U] & 0x80) && !(m_prevKeyboardState[DIK_U] & 0x80))
+	{
+		controller->ungroupBoids();
 	}
 
 	//update all objects

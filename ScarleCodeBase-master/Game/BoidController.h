@@ -19,6 +19,8 @@ public:
 	void Tick(GameData* _GD);
 	void DrawBoids(DrawData* _DD);
 	void SpawnBoid(int tag);
+	void groupBoids();
+	void ungroupBoids();
 
 	std::vector<Boid*> boids;
 
