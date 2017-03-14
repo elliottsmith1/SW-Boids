@@ -213,7 +213,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//text->SetColour(Color((float*)&Colors::Yellow));
 	//m_GameObject2Ds.push_back(text);
 
-	controller = std::make_unique<BoidController>(500, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
+	controller = std::make_unique<BoidController>(650, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
 };
 
 

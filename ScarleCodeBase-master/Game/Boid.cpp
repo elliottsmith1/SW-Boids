@@ -29,7 +29,7 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id)
 
 	else
 	{
-		colour = Vector4(0, 0, 1, 0);
+		colour = Vector4(0, 1, 0, 1);
 		tag = 2;
 	}
 
@@ -171,16 +171,16 @@ void Boid::applyForce(Vector3 force)
 
 void Boid::flock(std::vector<Boid*> boids)
 {
-	Vector3 sep = separate(boids);   // Separation
+	Vector3 sep = separate(boids, 10);   // Separation
 	Vector3 ali = align(boids);      // Alignment
 	Vector3 coh = cohesion(boids);   // Cohesion
-	Vector3 rep = repel(boids);
+	Vector3 rep = separate(boids, 100);
 		
 	// Arbitrarily weight these forces
-	sep *= 7.0f;
+	sep *= 5.0f;
 	ali *= 2.0f;
 	coh *= 1.0f;
-	rep *= 1.0f;
+	rep *= 2.0f;
 
 	// Add the force vectors to acceleration
 	applyForce(sep);
@@ -251,9 +251,9 @@ void Boid::boundingBox()
 	}
 }
 
-Vector3 Boid::separate(std::vector<Boid*> boids)
+Vector3 Boid::separate(std::vector<Boid*> boids, int _sep)
 {
-	float desiredseparation = 10.0f;
+	float desiredseparation = _sep;
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
@@ -262,13 +262,28 @@ Vector3 Boid::separate(std::vector<Boid*> boids)
 		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
 
 		if ((dis > 0) && (dis < desiredseparation))
-		{
-			// Calculate vector pointing away from neighbor
-			Vector3 diff = (m_pos - boids[i]->GetPos());
-			diff = XMVector3Normalize(diff);
-			diff = (diff / dis);        // Weight by distance
-			steer += diff;
-			count++;            // Keep track of how many
+		{			
+			if (desiredseparation > 99)
+				{
+					if (!checkColour(this, boids[i]))
+					{
+						// Calculate vector pointing away from neighbor
+						Vector3 diff = (m_pos - boids[i]->GetPos());
+						diff = XMVector3Normalize(diff);
+						diff = (diff / dis);        // Weight by distance
+						steer += diff;
+						count++;            // Keep track of how many
+					}
+				}
+			else 
+			{
+				// Calculate vector pointing away from neighbor
+				Vector3 diff = (m_pos - boids[i]->GetPos());
+				diff = XMVector3Normalize(diff);
+				diff = (diff / dis);        // Weight by distance
+				steer += diff;
+				count++;            // Keep track of how many
+			}
 		}
 	}
 	// Average -- divide by how many
@@ -330,7 +345,7 @@ Vector3 Boid::repel(std::vector<Boid*> boids)
 
 Vector3 Boid::align(std::vector<Boid*> boids)
 {
-	float neighbordist = 20.0f;
+	float neighbordist = 30.0f;
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -369,7 +384,7 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 
 Vector3 Boid::cohesion(std::vector<Boid*> boids)
 {
-	float neighbordist = 20.0f;
+	float neighbordist = 30.0f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)

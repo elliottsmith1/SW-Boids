@@ -18,7 +18,7 @@ public:
 	void updateBoid();
 	Vector3 seek(Vector3 target);
 	void boundingBox();
-	Vector3 separate(std::vector<Boid*> boids);
+	Vector3 separate(std::vector<Boid*> boids, int _sep);
 	Vector3 align(std::vector<Boid*> boids);
 	Vector3 cohesion(std::vector<Boid*> boids);
 	Vector3 repel(std::vector<Boid*> boids);
