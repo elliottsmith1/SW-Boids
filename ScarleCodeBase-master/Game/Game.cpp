@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <time.h>
 #include <iostream>
+#include <AntTweakBar.h>
 
 //our headers
 #include "ObjectList.h"
@@ -13,9 +14,24 @@
 #include "drawdata.h"
 #include "DrawData2D.h"
 #include "BoidController.h"
+#include "BoidData.h"
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
+
+void TW_CALL GroupCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->groupBoids();
+}
+
+void TW_CALL UnGroupCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->ungroupBoids();
+}
 
 Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance) 
 {
@@ -211,11 +227,34 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//TextGO2D* text = new TextGO2D("Test Text");
 	//text->SetPos(Vector2(100, 10));
 	//text->SetColour(Color((float*)&Colors::Yellow));
-	//m_GameObject2Ds.push_back(text);
+	//m_GameObject2Ds.push_back(text);	
 
-	controller = std::make_unique<BoidController>(650, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory);
+	BoidData* m_boidData = new BoidData;
+	m_boidData->alignmentWeight = 2.0f;
+	m_boidData->seperationWeight = 5.0f;
+	m_boidData->cohesionWeight = 1.0f;
+	m_boidData->repelWeight = 1.0f;
+	m_boidData->maxSpeed = 0.5f;
+	m_boidData->maxForce = 0.03f;
+
+	TwInit(TW_DIRECT3D11, _pd3dDevice);
+	TwWindowSize(width, height);
+
+	TwBar *myBar;
+	myBar = TwNewBar("Boid parameters");
+	int barSize[2] = { 250, 200 };
+	TwSetParam(myBar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+
+	TwAddVarRW(myBar, "Seperation", TW_TYPE_FLOAT, &m_boidData->seperationWeight, "");
+	TwAddVarRW(myBar, "Cohesion", TW_TYPE_FLOAT, &m_boidData->cohesionWeight, "");
+	TwAddVarRW(myBar, "Alignment", TW_TYPE_FLOAT, &m_boidData->alignmentWeight, "");
+	TwAddVarRW(myBar, "Repel", TW_TYPE_FLOAT, &m_boidData->repelWeight, "");
+	TwAddVarRW(myBar, "Speed", TW_TYPE_FLOAT, &m_boidData->maxSpeed, "");
+	TwAddButton(myBar, "Group", GroupCB, this, " label='Group' ");
+	TwAddButton(myBar, "Release", UnGroupCB, this, " label='Release' ");
+
+	controller = std::make_unique<BoidController>(1000, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory, m_boidData);
 };
-
 
 Game::~Game() 
 {
@@ -290,7 +329,6 @@ bool Game::Tick()
 	//lock the cursor to the centre of the window
 	RECT window;
 	GetWindowRect(m_hWnd, &window);
-	SetCursorPos((window.left + window.right) >> 1, (window.bottom + window.top) >> 1);
 
 	//calculate frame time-step dt for passing down to game objects
 	DWORD currentTime = GetTickCount();
@@ -312,7 +350,6 @@ bool Game::Tick()
 		PlayTick();
 		break;
 	}
-	
 
 	return true;
 };
@@ -337,16 +374,6 @@ void Game::PlayTick()
 	if (m_keyboardState[DIK_B] & 0x80)
 	{
 		controller->SpawnBoid(1);
-	}
-
-	if ((m_keyboardState[DIK_G] & 0x80) && !(m_prevKeyboardState[DIK_G] & 0x80))
-	{
-		controller->groupBoids();
-	}
-
-	if ((m_keyboardState[DIK_U] & 0x80) && !(m_prevKeyboardState[DIK_U] & 0x80))
-	{
-		controller->ungroupBoids();
 	}
 
 	//update all objects
@@ -396,9 +423,18 @@ void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext)
 
 	//drawing text screws up the Depth Stencil State, this puts it back again!
 	_pd3dImmediateContext->OMSetDepthStencilState(m_states->DepthDefault(), 0);
+
+	TwDraw();
+}
+void Game::groupBoids()
+{
+	controller->groupBoids();
+}
+
+void Game::ungroupBoids()
+{
+	controller->ungroupBoids();
 };
-
-
 
 bool Game::ReadInput()
 {

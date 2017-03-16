@@ -1,11 +1,15 @@
 #include "Boid.h"
 #include "BoidController.h"
 #include "GameData.h"
+#include "BoidData.h"
+
 #include <iostream>
 
-Boid::Boid(ID3D11Device* _pd3dDevice, int _id)
+Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData)
 {
 	ID = _id;
+	m_boidData = _boidData;
+
 	int numVerts = 24;
 	m_numPrims = numVerts / 3;
 	myVertex* m_vertices = new myVertex[numVerts];
@@ -140,11 +144,8 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id)
 	position = m_pos;
 	r = 2.0f;
 
-	maxforce = 0.03f;
-	maxspeed = 0.5f;
-
-	maxSpeedV = Vector3(maxspeed, maxspeed, maxspeed);
-	maxForceV = Vector3(maxforce, maxforce, maxforce);
+	maxSpeedV = Vector3(m_boidData->maxSpeed, m_boidData->maxSpeed, m_boidData->maxSpeed);
+	maxForceV = Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce);
 
 	m_scale *= 3;
 }
@@ -177,10 +178,10 @@ void Boid::flock(std::vector<Boid*> boids)
 	Vector3 rep = separate(boids, 100);		// Repel
 		
 	// Arbitrarily weight these forces
-	sep *= 5.0f;
-	ali *= 2.0f;
-	coh *= 1.0f;
-	rep *= 2.0f;
+	sep *= m_boidData->seperationWeight;
+	ali *= m_boidData->alignmentWeight;
+	coh *= m_boidData->cohesionWeight;
+	rep *= m_boidData->repelWeight;
 
 	// Add the force vectors to acceleration
 	applyForce(sep);
@@ -203,7 +204,7 @@ void Boid::updateBoid()
 
 	// Limit speed
 	//velocity = XMVector3ClampLength(velocity, 0, maxspeed);
-	velocity = XMVector3ClampLengthV(velocity, Vector3::Zero, maxSpeedV);
+	velocity = XMVector3ClampLengthV(velocity, Vector3::Zero, Vector3(m_boidData->maxSpeed, m_boidData->maxSpeed, m_boidData->maxSpeed));
 
 	m_pos += velocity;
 
@@ -217,11 +218,11 @@ Vector3 Boid::seek(Vector3 target)
 	
 	// Scale to maximum speed
 	desired = XMVector3Normalize(desired);
-	desired *= maxspeed;
+	desired *= m_boidData->maxSpeed;
 
 	// Steering = Desired minus Velocity
 	Vector3 steer = (desired - velocity);
-	steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
+	steer = XMVector3ClampLengthV(steer, Vector3::Zero, Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce));
 
 	return steer;
 }
@@ -301,9 +302,9 @@ Vector3 Boid::separate(std::vector<Boid*> boids, int _sep)
 	if (steer.Length() > 0)
 	{
 		steer = XMVector3Normalize(steer);
-		steer *= maxspeed;
+		steer *= m_boidData->maxSpeed;
 		steer -= velocity;
-		steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
+		steer = XMVector3ClampLengthV(steer, Vector3::Zero, Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce));
 	}
 	return steer;
 }
@@ -341,9 +342,9 @@ Vector3 Boid::repel(std::vector<Boid*> boids)
 	if (steer.Length() > 0)
 	{
 		steer = XMVector3Normalize(steer);
-		steer *= maxspeed;
+		steer *= m_boidData->maxSpeed;
 		steer -= velocity;
-		steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
+		steer = XMVector3ClampLengthV(steer, Vector3::Zero, Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce));
 	}
 	return steer;
 }
@@ -388,9 +389,9 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 		sum /= ((float)count);
 
 		sum = XMVector3Normalize(sum);
-		sum *= maxspeed;
+		sum *= m_boidData->maxSpeed;
 		Vector3 steer = (sum - velocity);
-		steer = XMVector3ClampLengthV(steer, Vector3::Zero, maxForceV);
+		steer = XMVector3ClampLengthV(steer, Vector3::Zero, Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce));
 		return steer;
 	}
 

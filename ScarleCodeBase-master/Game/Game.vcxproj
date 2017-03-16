@@ -76,6 +76,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>..\Bin\Desktop_2015\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\Bin\Desktop_2015\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)\AntTweakBar_116\AntTweakBar\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\AntTweakBar_116\AntTweakBar\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SolutionDir)\AntTweakBar_116\AntTweakBar\src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -123,6 +126,7 @@
   <ItemGroup>
     <ClInclude Include="Boid.h" />
     <ClInclude Include="BoidController.h" />
+    <ClInclude Include="BoidData.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="CMOGO.h" />
     <ClInclude Include="ConstantBuffer.h" />

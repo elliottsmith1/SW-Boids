@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-BoidController::BoidController(int _numBoids, std::string _fileName, ID3D11Device * _pd3dDevice, IEffectFactory * _EF)
+BoidController::BoidController(int _numBoids, std::string _fileName, ID3D11Device * _pd3dDevice, IEffectFactory * _EF, BoidData* _boidData)
 {
 	numBoids = _numBoids;
 
@@ -12,7 +12,7 @@ BoidController::BoidController(int _numBoids, std::string _fileName, ID3D11Devic
 
 	for (int i = 0; i < numBoids; i++)
 	{
-		boid = new Boid(_pd3dDevice, i);
+		boid = new Boid(_pd3dDevice, i, _boidData);
 		boids.push_back(boid);
 	}
 }

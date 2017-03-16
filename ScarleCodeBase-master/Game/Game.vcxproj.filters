@@ -138,6 +138,9 @@
     <ClInclude Include="Boid.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="BoidData.h">
+      <Filter>Base\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">

@@ -1,13 +1,16 @@
 #include "VBGO.h"
 #include "vertex.h"
+
 #include <vector>
 #include <memory>
+
+struct BoidData;
 
 class Boid : public VBGO
 {
 
 public:
-	Boid(ID3D11Device* _pd3dDevice, int _id);
+	Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData);
 	~Boid() = default;
 
 	void Tick(GameData* _GD) override;
@@ -40,12 +43,11 @@ protected:
 	Vector3 acceleration;
 	Vector3 maxSpeedV;
 	Vector3 maxForceV;
-	float r;
-	float maxforce;    
-	float maxspeed;   
+	float r; 
 	int tag = 1;
 	bool active = false;
 	bool grouping = false;
 	int ID = 0;
 	Vector4 colour = Vector4(1, 0, 0, 1);
+	BoidData* m_boidData;
 };
