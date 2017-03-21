@@ -249,7 +249,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	TwAddVarRW(myBar, "Cohesion", TW_TYPE_FLOAT, &m_boidData->cohesionWeight, "");
 	TwAddVarRW(myBar, "Alignment", TW_TYPE_FLOAT, &m_boidData->alignmentWeight, "");
 	TwAddVarRW(myBar, "Repel", TW_TYPE_FLOAT, &m_boidData->repelWeight, "");
-	TwAddVarRW(myBar, "Speed", TW_TYPE_FLOAT, &m_boidData->maxSpeed, "");
+	//TwAddVarRW(myBar, "Speed", TW_TYPE_FLOAT, &m_boidData->maxSpeed, "");
 	TwAddButton(myBar, "Group", GroupCB, this, " label='Group' ");
 	TwAddButton(myBar, "Release", UnGroupCB, this, " label='Release' ");
 

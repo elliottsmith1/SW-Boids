@@ -24,6 +24,7 @@ public:
 	Vector3 separate(std::vector<Boid*> boids, int _sep);
 	Vector3 align(std::vector<Boid*> boids);
 	Vector3 cohesion(std::vector<Boid*> boids);
+	Vector3 attractEnemy(std::vector<Boid*> boids);
 	Vector3 repel(std::vector<Boid*> boids);
 	void applyGrouping();
 	bool checkColour(Boid* b, Boid* c);
@@ -35,6 +36,7 @@ public:
 	int GetID();
 	void setGrouping(bool _group);
 	bool getGrouping();
+	void attackEnemy(Boid* _enemy);
 
 protected:
 	myVertex* m_vertices;

@@ -176,18 +176,21 @@ void Boid::flock(std::vector<Boid*> boids)
 	Vector3 ali = align(boids);				// Alignment
 	Vector3 coh = cohesion(boids);			// Cohesion
 	Vector3 rep = separate(boids, 100);		// Repel
+	Vector3 atr = attractEnemy(boids);		// Attract enemy
 		
 	// Arbitrarily weight these forces
 	sep *= m_boidData->seperationWeight;
 	ali *= m_boidData->alignmentWeight;
 	coh *= m_boidData->cohesionWeight;
 	rep *= m_boidData->repelWeight;
+	atr *= 5.0f;
 
 	// Add the force vectors to acceleration
 	applyForce(sep);
 	applyForce(ali);
 	applyForce(coh);
 	applyForce(rep);
+	applyForce(atr);
 
 	if (grouping)
 	{
@@ -270,17 +273,18 @@ Vector3 Boid::separate(std::vector<Boid*> boids, int _sep)
 		if ((dis > 0) && (dis < desiredseparation))
 		{			
 			if (desiredseparation > 99)
+			{
+				if (!checkColour(this, boids[i]))
 				{
-					if (!checkColour(this, boids[i]))
-					{
-						// Calculate vector pointing away from neighbor
-						Vector3 diff = (m_pos - boids[i]->GetPos());
-						diff = XMVector3Normalize(diff);
-						diff = (diff / dis);        // Weight by distance
-						steer += diff;
-						count++;            // Keep track of how many
-					}
+					// Calculate vector pointing away from neighbor
+					Vector3 diff = (m_pos - boids[i]->GetPos());
+					diff = XMVector3Normalize(diff);
+					diff = (diff / dis);        // Weight by distance
+					steer += diff;
+					count++;            // Keep track of how many
 				}
+			}
+
 			else 
 			{
 				// Calculate vector pointing away from neighbor
@@ -306,6 +310,7 @@ Vector3 Boid::separate(std::vector<Boid*> boids, int _sep)
 		steer -= velocity;
 		steer = XMVector3ClampLengthV(steer, Vector3::Zero, Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce));
 	}
+
 	return steer;
 }
 
@@ -432,6 +437,41 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 	}	
 }
 
+Vector3 Boid::attractEnemy(std::vector<Boid*> boids)
+{
+	float neighbordist = 10.0f;
+	Vector3 sum = Vector3(0, 0, 0);
+	int count = 0;
+
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (boids[i] != this)
+		{
+			if (!checkColour(this, boids[i]))
+			{
+				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
+				{
+					sum += boids[i]->GetPos();
+					count++;
+					attackEnemy(boids[i]);
+					break;
+				}
+			}
+		}
+	}
+
+	if (count > 0)
+	{
+		sum /= count;
+		return seek(sum);
+	}
+
+	else
+	{
+		return Vector3(0, 0, 0);
+	}
+}
+
 bool Boid::checkColour(Boid* b, Boid* c)
 {
 	if ((*b).tag == (*c).tag)
@@ -493,4 +533,9 @@ void Boid::setGrouping(bool _group)
 bool Boid::getGrouping()
 {
 	return grouping;
+}
+
+void Boid::attackEnemy(Boid * _enemy)
+{
+
 }

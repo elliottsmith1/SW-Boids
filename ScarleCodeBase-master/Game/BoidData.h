@@ -1,7 +1,7 @@
 
 struct BoidData
 {
-	float maxSpeed = 0.5f;
+	float maxSpeed = 0.0f;
 	float maxForce = 0.03f;
 
 	float seperationWeight = 1.0f;
