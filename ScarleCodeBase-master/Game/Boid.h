@@ -37,6 +37,13 @@ public:
 	void setGrouping(bool _group);
 	bool getGrouping();
 	void attackEnemy(Boid* _enemy);
+	void setHealth(int _health);
+	int getHealth();
+	void setAlive(bool _alive);
+	bool getAlive();
+	void fall();
+	void setFighting(bool _fighting);
+	bool getFighting();
 
 protected:
 	myVertex* m_vertices;
@@ -49,7 +56,10 @@ protected:
 	int tag = 1;
 	bool active = false;
 	bool grouping = false;
+	bool fighting = false;
 	int ID = 0;
 	Vector4 colour = Vector4(1, 0, 0, 1);
 	BoidData* m_boidData;
+	int health = 100;
+	bool alive = true;
 };

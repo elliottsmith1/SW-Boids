@@ -28,6 +28,7 @@ struct DrawData;
 struct DrawData2D;
 class Light;
 class BoidController;
+class BoidData;
 
 class Game
 {
@@ -42,6 +43,8 @@ public:
 
 	void groupBoids();
 	void ungroupBoids();
+	void fightBoids();
+	void passiveBoids();
 
 protected:
 	DWORD m_playTime; //amount of time since the game started
@@ -76,6 +79,7 @@ protected:
 
 	//boid controller
 	std::unique_ptr<BoidController> controller;
+	BoidData* m_boidData;
 
 	//Tick functions for each state
 	void PlayTick();

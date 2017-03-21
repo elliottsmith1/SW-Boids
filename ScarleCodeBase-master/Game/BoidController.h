@@ -23,6 +23,8 @@ public:
 	void SpawnBoid(int tag);
 	void groupBoids();
 	void ungroupBoids();
+	void enableFighting();
+	void disableFighting();
 
 	std::vector<Boid*> boids;
 

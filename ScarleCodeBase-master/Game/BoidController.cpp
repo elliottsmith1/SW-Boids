@@ -1,6 +1,7 @@
 #include "BoidController.h"
 #include "GameData.h"
 #include "Boid.h"
+#include "BoidData.h"
 
 #include <iostream>
 
@@ -103,6 +104,28 @@ void BoidController::ungroupBoids()
 		if (boids[i]->getGrouping())
 		{
 			boids[i]->setGrouping(false);
+		}
+	}
+}
+
+void BoidController::enableFighting()
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (!boids[i]->getGrouping())
+		{
+			boids[i]->setFighting(true);
+		}
+	}
+}
+
+void BoidController::disableFighting()
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		if (!boids[i]->getGrouping())
+		{
+			boids[i]->setFighting(false);
 		}
 	}
 }

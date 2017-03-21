@@ -33,6 +33,20 @@ void TW_CALL UnGroupCB(void * m_boidData)
 	game->ungroupBoids();
 }
 
+void TW_CALL FightCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->fightBoids();
+}
+
+void TW_CALL PassiveCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->passiveBoids();
+}
+
 Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance) 
 {
 	//set up audio
@@ -117,34 +131,12 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 			FileVBGO* terrainBox = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
 			terrainBox->SetScale(3, 0, 3);
 			m_GameObjects.push_back(terrainBox);
-			terrainBox->SetPos(Vector3(posX, 0, posZ));
+			terrainBox->SetPos(Vector3(posX, -10, posZ));
 			posX += 110;
 		}
 		posZ += 110;
 		posX = 0;
 	}
-
-
-
-	////create terrain
-	//FileVBGO* terrainBox1 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
-	//terrainBox1->SetScale(3, 0, 3);
-	//m_GameObjects.push_back(terrainBox1);
-
-	//FileVBGO* terrainBox2 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
-	//terrainBox2->SetScale(3, 0, 3);
-	//m_GameObjects.push_back(terrainBox2);
-	//terrainBox2->SetPos(terrainBox2->GetPos() + Vector3(110, 0, 0));
-
-	//FileVBGO* terrainBox3 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
-	//terrainBox3->SetScale(3, 0, 3);
-	//m_GameObjects.push_back(terrainBox3);
-	//terrainBox3->SetPos(terrainBox3->GetPos() + Vector3(110, 0, 110));
-
-	//FileVBGO* terrainBox4 = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
-	//terrainBox4->SetScale(3, 0, 3);
-	//m_GameObjects.push_back(terrainBox4);
-	//terrainBox4->SetPos(terrainBox4->GetPos() + Vector3(0, 0, 110));
 
 	FileVBGO* cameraPoint = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
 	cameraPoint->SetScale(0, 0, 0);
@@ -229,7 +221,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//text->SetColour(Color((float*)&Colors::Yellow));
 	//m_GameObject2Ds.push_back(text);	
 
-	BoidData* m_boidData = new BoidData;
+	m_boidData =  new BoidData;
 	m_boidData->alignmentWeight = 2.0f;
 	m_boidData->seperationWeight = 5.0f;
 	m_boidData->cohesionWeight = 1.0f;
@@ -250,8 +242,10 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	TwAddVarRW(myBar, "Alignment", TW_TYPE_FLOAT, &m_boidData->alignmentWeight, "");
 	TwAddVarRW(myBar, "Repel", TW_TYPE_FLOAT, &m_boidData->repelWeight, "");
 	//TwAddVarRW(myBar, "Speed", TW_TYPE_FLOAT, &m_boidData->maxSpeed, "");
-	TwAddButton(myBar, "Group", GroupCB, this, " label='Group' ");
-	TwAddButton(myBar, "Release", UnGroupCB, this, " label='Release' ");
+	TwAddButton(myBar, "Enable Grouping", GroupCB, this, " label='Enable Grouping' ");
+	TwAddButton(myBar, "Disable Grouping", UnGroupCB, this, " label='Disable Grouping' ");
+	TwAddButton(myBar, "Enable Fighting", FightCB, this, " label='Enable Fighting' ");
+	TwAddButton(myBar, "Disable Fighting", PassiveCB, this, " label='Disable Fighting' ");
 
 	controller = std::make_unique<BoidController>(1000, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory, m_boidData);
 };
@@ -301,6 +295,8 @@ Game::~Game()
 	delete m_fxFactory;
 
 	delete m_DD2D;
+
+	delete m_boidData;
 
 };
 
@@ -434,7 +430,17 @@ void Game::groupBoids()
 void Game::ungroupBoids()
 {
 	controller->ungroupBoids();
-};
+}
+
+void Game::fightBoids()
+{
+	controller->enableFighting();
+}
+
+void Game::passiveBoids()
+{
+	controller->disableFighting();
+}
 
 bool Game::ReadInput()
 {
