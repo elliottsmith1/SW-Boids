@@ -7,7 +7,7 @@ struct BoidData
 	float seperationWeight = 1.0f;
 	float cohesionWeight = 1.0f;
 	float alignmentWeight = 1.0f;
-	float repelWeight = 2.0f;
+	float braveryWeight = 2.0f;
 
 	float neighbourDis = 1.0f;
 };

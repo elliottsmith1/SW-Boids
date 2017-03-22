@@ -20,7 +20,7 @@ public:
 
 	void Tick(GameData* _GD);
 	void DrawBoids(DrawData* _DD);
-	void SpawnBoid();
+	void SpawnBoid(bool _rand);
 	void groupBoids();
 	void ungroupBoids();
 	void enableFighting();

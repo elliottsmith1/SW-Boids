@@ -45,7 +45,7 @@ public:
 	void ungroupBoids();
 	void fightBoids();
 	void passiveBoids();
-	void controllerSpawn();
+	void controllerSpawn(bool _rand);
 	void controllerReset();
 
 protected:

@@ -19,6 +19,7 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
+//callback functions for tweak bar buttons
 void TW_CALL GroupCB(void * m_boidData)
 {
 	Game *game = (Game*)m_boidData;
@@ -51,7 +52,14 @@ void TW_CALL SpawnCB(void * m_boidData)
 {
 	Game *game = (Game*)m_boidData;
 
-	game->controllerSpawn();
+	game->controllerSpawn(false);
+}
+
+void TW_CALL SpawnRandCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->controllerSpawn(true);
 }
 
 void TW_CALL ResetCB(void * m_boidData)
@@ -135,6 +143,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	m_light = new Light(Vector3(300.0f, 100.0f, 300.0f), Color(1.0f, 1.0f, 1.0f, 1.0f), Color(0.4f, 0.1f, 0.1f, 1.0f));
 	m_GameObjects.push_back(m_light);
 
+	//create a base floor of 12 tiles
 	int posX = 0;
 	int posZ = 0;
 
@@ -152,14 +161,11 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 		posX = 0;
 	}
 
+	//create point for camera to look at in centre
 	FileVBGO* cameraPoint = new FileVBGO("../Assets/terrainTex.txt", _pd3dDevice);
 	cameraPoint->SetScale(0, 0, 0);
 	m_GameObjects.push_back(cameraPoint);
 	cameraPoint->SetPos(cameraPoint->GetPos() + Vector3(100, 0, 100));
-
-	////add Player
-	/*Player* pPlayer = new Player("BirdModelV1.cmo", _pd3dDevice, m_fxFactory);
-	m_GameObjects.push_back(pPlayer);*/
 
 	//add a secondary camera
 	m_TPScam = new TPSCamera(0.25f * XM_PI, AR, 1.0f, 10000.0f, cameraPoint, Vector3::UnitY, Vector3(50.0f, 10.0f, 100.0f));
@@ -172,100 +178,43 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	m_DD->m_cam = m_cam;
 	m_DD->m_light = m_light;
 
-	////add random content to show the various what you've got here
-	//Terrain* terrain = new Terrain("table.cmo", _pd3dDevice, m_fxFactory, Vector3(100.0f, 0.0f, 100.0f), 0.0f, 0.0f, 0.0f, 0.25f * Vector3::One);
-	//m_GameObjects.push_back(terrain);
-
-	////add some stuff to show off
-
-	//FileVBGO* Box = new FileVBGO("../Assets/cube.txt", _pd3dDevice);
-	//m_GameObjects.push_back(Box);
-	//Box->SetPos(Vector3(0.0f, 0.0f, -100.0f));
-	//Box->SetPitch(XM_PIDIV4);
-	//Box->SetScale(20.0f);
-
-	////L-system like tree
-	//m_GameObjects.push_back(new Tree(4, 4, .6f, 10.0f *Vector3::Up, XM_PI/6.0f, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory));
-
-	//VBCube* cube = new VBCube();
-	//cube->init(11, _pd3dDevice);
-	//cube->SetPos(Vector3(100.0f, 0.0f, 0.0f));
-	//cube->SetScale(4.0f);
-	//m_GameObjects.push_back(cube);
-
-	//VBSpike* spikes = new VBSpike();
-	//spikes->init(11, _pd3dDevice);
-	//spikes->SetPos(Vector3(0.0f, 0.0f, 100.0f));
-	//spikes->SetScale(4.0f);
-	//m_GameObjects.push_back(spikes);
-
-	//VBSpiral* spiral = new VBSpiral();
-	//spiral->init(11, _pd3dDevice);
-	//spiral->SetPos(Vector3(-100.0f, 0.0f, 0.0f));
-	//spiral->SetScale(4.0f);
-	//m_GameObjects.push_back(spiral);
-
-	//VBPillow* pillow = new VBPillow();
-	//pillow->init(11, _pd3dDevice);
-	//pillow->SetPos(Vector3(-100.0f, 0.0f, -100.0f));
-	//pillow->SetScale(4.0f);
-	//m_GameObjects.push_back(pillow);
-
-	//VBSnail* snail = new VBSnail(_pd3dDevice, "../Assets/baseline.txt", 150, 0.98f, 0.09f * XM_PI, 0.4f, Color(1.0f, 0.0f, 0.0f, 1.0f), Color(0.0f, 0.0f, 1.0f, 1.0f));
-	//snail->SetPos(Vector3(-100.0f, 0.0f, 100.0f));
-	//snail->SetScale(2.0f);
-	//m_GameObjects.push_back(snail);
-
-	////Marching Cubes
-	//VBMarchCubes* VBMC = new VBMarchCubes();
-	//VBMC->init(Vector3(-8.0f, -8.0f, -17.0f), Vector3(8.0f, 8.0f,23.0f), 60.0f*Vector3::One, 0.01, _pd3dDevice);
-	//VBMC->SetPos(Vector3(100,0,-100));
-	//VBMC->SetPitch(-XM_PIDIV2);
-	//VBMC->SetScale(Vector3(3, 3, 1.5));
-	//m_GameObjects.push_back(VBMC);
-
-
-	////example basic 2D stuff
-	//ImageGO2D* logo = new ImageGO2D("logo_small", _pd3dDevice);
-	//logo->SetPos(200.0f * Vector2::One);
-	//m_GameObject2Ds.push_back(logo);
-
-	//TextGO2D* text = new TextGO2D("Test Text");
-	//text->SetPos(Vector2(100, 10));
-	//text->SetColour(Color((float*)&Colors::Yellow));
-	//m_GameObject2Ds.push_back(text);	
-
+	//create boid data struct and assign values
 	m_boidData =  new BoidData;
 	m_boidData->alignmentWeight = 1.0f;
-	m_boidData->seperationWeight = 3.0f;
+	m_boidData->seperationWeight = 4.0f;
 	m_boidData->cohesionWeight = 1.0f;
-	m_boidData->repelWeight = 2.0f;
+	m_boidData->braveryWeight = -2.0f;
 	m_boidData->maxSpeed = 0.5f;
-	m_boidData->maxForce = 0.03f;
+	m_boidData->maxForce = 0.04f;
 	m_boidData->neighbourDis = 50.0f;
 
 	TwInit(TW_DIRECT3D11, _pd3dDevice);
 	TwWindowSize(width, height);
 
+	//create tweak bar
 	TwBar *myBar;
 	myBar = TwNewBar("Boid parameters");
-	int barSize[2] = { 250, 200 };
+	int barSize[2] = { 250, 225 };
 	TwSetParam(myBar, NULL, "size", TW_PARAM_INT32, 2, barSize);
 
+	//define values and buttons
 	TwAddVarRW(myBar, "Seperation", TW_TYPE_FLOAT, &m_boidData->seperationWeight, "");
 	TwAddVarRW(myBar, "Cohesion", TW_TYPE_FLOAT, &m_boidData->cohesionWeight, "");
 	TwAddVarRW(myBar, "Alignment", TW_TYPE_FLOAT, &m_boidData->alignmentWeight, "");
-	TwAddVarRW(myBar, "Repel", TW_TYPE_FLOAT, &m_boidData->repelWeight, "");
-	//TwAddVarRW(myBar, "Speed", TW_TYPE_FLOAT, &m_boidData->maxSpeed, "");
+	TwAddVarRW(myBar, "Bravery", TW_TYPE_FLOAT, &m_boidData->braveryWeight, "");
+	TwAddVarRW(myBar, "Neighbour Distance", TW_TYPE_FLOAT, &m_boidData->neighbourDis, "");
 	TwAddButton(myBar, "Enable Grouping", GroupCB, this, " label='Enable Grouping' ");
 	TwAddButton(myBar, "Disable Grouping", UnGroupCB, this, " label='Disable Grouping' ");
 	TwAddButton(myBar, "Enable Fighting", FightCB, this, " label='Enable Fighting' ");
 	TwAddButton(myBar, "Disable Fighting", PassiveCB, this, " label='Disable Fighting' ");
 	TwAddButton(myBar, "Spawn Boids", SpawnCB, this, " label='Spawn Boids' ");
+	TwAddButton(myBar, "Spawn Boids (Random)", SpawnRandCB, this, " label='Spawn Boids (Random)' ");
 	TwAddButton(myBar, "Reset Boids", ResetCB, this, " label='Reset Boids' ");
 
-	maxBoidSpawn = 800;
+	//how many boids to spawn
+	maxBoidSpawn = 1000;
 
+	//create boid manager
 	controller = std::make_unique<BoidController>(maxBoidSpawn, _pd3dDevice, m_fxFactory, m_boidData);
 };
 
@@ -301,7 +250,6 @@ Game::~Game()
 	}
 	m_GameObjects.clear();
 
-
 	//and the 2D ones
 	for (list<GameObject2D *>::iterator it = m_GameObject2Ds.begin(); it != m_GameObject2Ds.end(); it++)
 	{
@@ -316,7 +264,6 @@ Game::~Game()
 	delete m_DD2D;
 
 	delete m_boidData;
-
 };
 
 bool Game::Tick() 
@@ -384,17 +331,6 @@ void Game::PlayTick()
 		}
 	}
 
-	//spawn boids
-	if (m_keyboardState[DIK_B] & 0x80)
-	{
-		if (maxBoidSpawn > 0)
-		{
-			controller->SpawnBoid();
-
-			maxBoidSpawn--;
-		}
-	}
-
 	//update all objects
 	for (list<GameObject *>::iterator it = m_GameObjects.begin(); it != m_GameObjects.end(); it++)
 	{
@@ -405,6 +341,7 @@ void Game::PlayTick()
 		(*it)->Tick(m_GD);
 	}
 
+	//tick boid manager
 	controller->Tick(m_GD);
 }
 
@@ -423,6 +360,7 @@ void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext)
 	//update the constant buffer for the rendering of VBGOs
 	VBGO::UpdateConstantBuffer(m_DD);
 
+	//draw boids using manager
 	controller->DrawBoids(m_DD);
 
 	//draw all objects
@@ -443,9 +381,11 @@ void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext)
 	//drawing text screws up the Depth Stencil State, this puts it back again!
 	_pd3dImmediateContext->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 
+	//draw tweak bar
 	TwDraw();
 }
 
+//functions for previous callback functions to call
 void Game::groupBoids()
 {
 	controller->groupBoids();
@@ -466,9 +406,9 @@ void Game::passiveBoids()
 	controller->disableFighting();
 }
 
-void Game::controllerSpawn()
+void Game::controllerSpawn(bool _rand)
 {
-	controller->SpawnBoid();
+	controller->SpawnBoid(_rand);
 }
 
 void Game::controllerReset()

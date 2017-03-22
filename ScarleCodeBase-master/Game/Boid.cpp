@@ -5,8 +5,11 @@
 
 #include <iostream>
 
-Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type)
+Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type, int _numBoids)
 {
+	//max reserve local boids to max boids on screen
+	nearBoids.reserve(_numBoids);
+
 	ID = _id;
 	m_boidData = _boidData;
 
@@ -22,9 +25,7 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type)
 		m_vertices[i].texCoord = Vector2::One;
 	}
 
-	//in each loop create the two traingles for the matching sub-square on each of the six faces
-	int vert = 0;
-
+	//for each of the 4 types, assign tag and colour
 	switch (_type)
 	{
 	case 1:
@@ -44,6 +45,9 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type)
 		tag = 4;
 		break;
 	}
+
+	//in each loop create the two traingles for the matching sub-square on each face
+	int vert = 0;
 
 	//back			
 	m_vertices[vert].Color = colour;
@@ -136,12 +140,14 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type)
 
 	acceleration = Vector3(0, 0, 0);
 
+	//give random starting rotation and velocity
 	float angle = 0.1 + (rand() % (int)(359 - 0.1 + 1));
 
 	SetYaw(angle);
 
 	velocity = Vector3(cos(angle), 0, tan(angle));
 
+	//normal spawn locations for each type
 	switch (tag)
 	{
 	case 1:
@@ -174,15 +180,34 @@ void Boid::Tick(GameData* _GD)
 	VBGO::Tick(_GD);
 }
 
+void Boid::checkNearBoids(std::vector<Boid*> boids)
+{
+	//clear local boids
+	nearBoids.clear();
+
+	//assign any boids near enough to local vector
+	for (int i = 0; i < boids.size(); i++)
+	{
+		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
+
+		if ((dis > 0) && (dis < 150))
+		{
+			nearBoids.push_back(boids[i]);
+		}
+	}
+}
+
 void Boid::runBoid(std::vector<Boid*> boids, GameData* _GD)
 {
+	//move (using rules) when alive
 	if (alive)
 	{
 		flock(boids);
-		updateBoid();
+		updateBoid(_GD);
 		boundingBox();
 	}
 
+	//if standing when dead, fall
 	else
 	{
 		if (m_pitch < 30)
@@ -196,51 +221,61 @@ void Boid::runBoid(std::vector<Boid*> boids, GameData* _GD)
 
 void Boid::applyForce(Vector3 force)
 {
-	// We could add mass here if we want A = F / M
 	acceleration += force;
 }
 
 void Boid::flock(std::vector<Boid*> boids)
 {
-	Vector3 sep = separate(boids, 15);		// Separation
-	Vector3 ali = align(boids);				// Alignment
-	Vector3 coh = cohesion(boids);			// Cohesion
-	Vector3 rep = separate(boids, 100);		// Repel	
+	//check which boids are near
+	checkNearBoids(boids);
+
+	//apply rules
+	Vector3 sep = separate(15);			// Separation
+	Vector3 ali = align();				// Alignment
+	Vector3 coh = cohesion();			// Cohesion
+	Vector3 bra = separate(100);		// Bravery	
 		
-	// Arbitrarily weight these forces
+	// Weightweight the forces
 	sep *= m_boidData->seperationWeight;
 	ali *= m_boidData->alignmentWeight;
 	coh *= m_boidData->cohesionWeight;
-	rep *= m_boidData->repelWeight;	
+	bra *= m_boidData->braveryWeight;	
 
 	// Add the force vectors to acceleration
 	applyForce(sep);
 	applyForce(ali);
 	applyForce(coh);
-	applyForce(rep);
+	applyForce(bra);
 	
+	//if fighting is enabled then call attack function(s)
 	if (fighting)
 	{
-		attractEnemy(boids);
+		attractEnemy();
 	}
 
+	//if grouping is enabled then call grouping function
 	if (grouping)
 	{
 		applyGrouping();
 	}
 }
 
-void Boid::updateBoid()
+void Boid::updateBoid(GameData* _GD)
 {
+	//apply DT
+	acceleration * _GD->m_dt;
+
 	// Update velocity
 	velocity += acceleration;
+
+	velocity * _GD->m_dt / 60;
 
 	velocity = XMVector3Normalize(velocity);
 
 	// Limit speed
-	//velocity = XMVector3ClampLength(velocity, 0, maxspeed);
 	velocity = XMVector3ClampLengthV(velocity, Vector3::Zero, Vector3(m_boidData->maxSpeed, m_boidData->maxSpeed, m_boidData->maxSpeed));
 
+	//apply to position
 	m_pos += velocity;
 
 	// Reset acceleration to 0 each cycle
@@ -249,7 +284,8 @@ void Boid::updateBoid()
 
 Vector3 Boid::seek(Vector3 target)
 {
-	Vector3 desired = (target - m_pos);  // A vector pointing from the position to the target
+	// A vector pointing from the position to the target
+	Vector3 desired = (target - m_pos);  
 	
 	// Scale to maximum speed
 	desired = XMVector3Normalize(desired);
@@ -266,6 +302,7 @@ void Boid::boundingBox()
 {
 	int Xmin = 0, Xmax = 600, Zmin = 0, Zmax = 600;
 
+	//if out of bounds then bounce back and reverse direction 
 	if (m_pos.x < Xmin)
 	{
 		m_pos.x += 0.5f;
@@ -296,38 +333,42 @@ void Boid::boundingBox()
 	}
 }
 
-Vector3 Boid::separate(std::vector<Boid*> boids, int _sep)
+Vector3 Boid::separate(int _sep)
 {
 	float desiredseparation = _sep;
 	Vector3 steer = Vector3(0, 0, 0);
 	int count = 0;
-	// For every boid in the system, check if it's too close
-	for (int i = 0; i < boids.size(); i++)
+
+	// For every near boid, check if it's too close
+	for (int i = 0; i < nearBoids.size(); i++)
 	{
-		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
+		float dis = Vector3::Distance(m_pos, nearBoids[i]->GetPos());
 
 		if ((dis > 0) && (dis < desiredseparation))
 		{			
+			//if using function for bravery
 			if (desiredseparation > 99)
 			{
-				if (!checkColour(this, boids[i]))
+				//check other type
+				if (!checkColour(this, nearBoids[i]))
 				{
-					if (boids[i]->getAlive())
+					if (nearBoids[i]->getAlive())
 					{
 						// Calculate vector pointing away from neighbor
-						Vector3 diff = (m_pos - boids[i]->GetPos());
+						Vector3 diff = (m_pos - nearBoids[i]->GetPos());
 						diff = XMVector3Normalize(diff);
 						diff = (diff / dis);        // Weight by distance
-						steer += diff;
+						steer += (diff * -1);
 						count++;            // Keep track of how many
 					}
 				}
 			}
 
+			//else normal separation 
 			else 
 			{
 				// Calculate vector pointing away from neighbor
-				Vector3 diff = (m_pos - boids[i]->GetPos());
+				Vector3 diff = (m_pos - nearBoids[i]->GetPos());
 				diff = XMVector3Normalize(diff);
 				diff = (diff / dis);        // Weight by distance
 				steer += diff;
@@ -353,51 +394,9 @@ Vector3 Boid::separate(std::vector<Boid*> boids, int _sep)
 	return steer;
 }
 
-Vector3 Boid::repel(std::vector<Boid*> boids)
-{
-	float desiredseparation = 100.0f;
-	Vector3 steer = Vector3(0, 0, 0);
-	int count = 0;
-	// For every boid in the system, check if it's too close
-	for (int i = 0; i < boids.size(); i++)
-	{
-		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
-
-		if ((dis > 0) && (dis < desiredseparation))
-		{
-			if (!checkColour(this, boids[i]))
-			{
-				if (boids[i]->getAlive())
-				{
-					// Calculate vector pointing away from neighbor
-					Vector3 diff = (m_pos - boids[i]->GetPos());
-					diff = XMVector3Normalize(diff);
-					diff = (diff / dis);        // Weight by distance
-					steer += diff;
-					count++;            // Keep track of how many
-				}
-			}
-		}
-	}
-	// Average -- divide by how many
-	if (count > 0)
-	{
-		steer /= ((float)count);
-	}
-
-	// As long as the vector is greater than 0
-	if (steer.Length() > 0)
-	{
-		steer = XMVector3Normalize(steer);
-		steer *= m_boidData->maxSpeed;
-		steer -= velocity;
-		steer = XMVector3ClampLengthV(steer, Vector3::Zero, Vector3(m_boidData->maxForce, m_boidData->maxForce, m_boidData->maxForce));
-	}
-	return steer;
-}
-
 void Boid::applyGrouping()
 {
+	//for each type, force to move towards original spawn points to group up
 	switch (tag)
 	{
 	case 1:
@@ -415,23 +414,27 @@ void Boid::applyGrouping()
 	}
 }
 
-Vector3 Boid::align(std::vector<Boid*> boids)
+Vector3 Boid::align()
 {
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
-	for (int i = 0; i < boids.size(); i++)
+
+	//check all near boids
+	for (int i = 0; i < nearBoids.size(); i++)
 	{
-		if (boids[i] != this)		
+		if (nearBoids[i] != this)
 		{
-			if (checkColour(this, boids[i]))
+			//check same type
+			if (checkColour(this, nearBoids[i]))
 			{
-				float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
+				float dis = Vector3::Distance(m_pos, nearBoids[i]->GetPos());
 
 				if ((dis > 0) && (dis < m_boidData->neighbourDis))
 				{
-					if (boids[i]->getAlive())
+					if (nearBoids[i]->getAlive())
 					{
-						sum += boids[i]->GetVelocity();
+						//get velocity 
+						sum += nearBoids[i]->GetVelocity();
 						count++;
 					}
 				}
@@ -441,6 +444,7 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 
 	if (count > 0)
 	{
+		//average
 		sum /= ((float)count);
 
 		sum = XMVector3Normalize(sum);
@@ -456,21 +460,25 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 	}
 }
 
-Vector3 Boid::cohesion(std::vector<Boid*> boids)
+Vector3 Boid::cohesion()
 {
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
-	for (int i = 0; i < boids.size(); i++)
+
+	//check all near boids
+	for (int i = 0; i < nearBoids.size(); i++)
 	{
-		if (boids[i] != this)		
+		if (nearBoids[i] != this)
 		{
-			if (checkColour(this, boids[i]))
+			//check same type
+			if (checkColour(this, nearBoids[i]))
 			{
-				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < m_boidData->neighbourDis)
+				if (Vector3::Distance(m_pos, nearBoids[i]->GetPos()) < m_boidData->neighbourDis)
 				{
-					if (boids[i]->getAlive())
+					if (nearBoids[i]->getAlive())
 					{
-						sum += boids[i]->GetPos();
+						//get position
+						sum += nearBoids[i]->GetPos();
 						count++;
 					}
 				}
@@ -480,30 +488,35 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 
 	if (count > 0)
 	{
+		//average 
 		sum /= count;
 		return seek(sum);  
 	}
+
 	else
 	{
 		return Vector3(0, 0, 0);
 	}	
 }
 
-void Boid::attractEnemy(std::vector<Boid*> boids)
+void Boid::attractEnemy()
 {
 	float enemyDis = 10.0f;
 
-	for (int i = 0; i < boids.size(); i++)
+	//check all near boids
+	for (int i = 0; i < nearBoids.size(); i++)
 	{
-		if (boids[i] != this)
+		if (nearBoids[i] != this)
 		{
-			if (!checkColour(this, boids[i]))
+			//check other type
+			if (!checkColour(this, nearBoids[i]))
 			{
-				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < enemyDis)
+				if (Vector3::Distance(m_pos, nearBoids[i]->GetPos()) < enemyDis)
 				{
-					if (boids[i]->getAlive())
+					if (nearBoids[i]->getAlive())
 					{
-						attackEnemy(boids[i]);
+						//attack
+						attackEnemy(nearBoids[i]);
 						break;
 					}
 				}
@@ -514,6 +527,7 @@ void Boid::attractEnemy(std::vector<Boid*> boids)
 
 void Boid::resetBoid()
 {
+	//reset all variables to respawn
 	m_pos = spawnPoint;
 	alive = true;
 	health = 100;
@@ -525,6 +539,7 @@ void Boid::resetBoid()
 
 bool Boid::checkColour(Boid* b, Boid* c)
 {
+	//check tag of other boid against own
 	if ((*b).tag == (*c).tag)
 	{
 		return true;
@@ -544,21 +559,6 @@ Vector3 Boid::GetVelocity()
 int Boid::GetTag()
 {
 	return tag;
-}
-
-void Boid::SetTag(int num)
-{
-	tag = num; 
-
-	if (tag == 1)
-	{
-		colour = Vector4(1, 0, 0, 0);
-	}
-
-	else if (tag == 2)
-	{
-		colour = Vector4(0, 0, 0, 1);
-	}
 }
 
 void Boid::SetActive(bool act)
@@ -587,10 +587,11 @@ bool Boid::getGrouping()
 }
 
 void Boid::attackEnemy(Boid * _enemy)
-{
-	
+{	
+	//attack
 	_enemy->setHealth(_enemy->getHealth() - 1);
 
+	//kill
 	if (_enemy->getHealth() <= 0)
 	{
 		_enemy->setAlive(false);
