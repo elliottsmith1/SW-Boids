@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData)
+Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type)
 {
 	ID = _id;
 	m_boidData = _boidData;
@@ -25,16 +25,24 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData)
 	//in each loop create the two traingles for the matching sub-square on each of the six faces
 	int vert = 0;
 
-	if (ID % 2 == 0)
+	switch (_type)
 	{
+	case 1:
 		colour = Vector4(1, 0, 0, 1);
 		tag = 1;
-	}
-
-	else
-	{
+		break;
+	case 2:
 		colour = Vector4(0, 1, 0, 1);
 		tag = 2;
+		break;
+	case 3:
+		colour = Vector4(0, 0, 1, 1);
+		tag = 3;
+		break;
+	case 4:
+		colour = Vector4(1, 1, 1, 1);
+		tag = 4;
+		break;
 	}
 
 	//back			
@@ -134,20 +142,23 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData)
 
 	velocity = Vector3(cos(angle), 0, tan(angle));
 
-	/*float pos1 = -50 + (rand() % (int)(660 - -50 + 1));
-	float pos2 = -50 + (rand() % (int)(660 - -50 + 1));
-
-	m_pos = Vector3(pos1, 1, pos2);*/
-
-	if (tag == 1)
+	switch (tag)
 	{
-		m_pos = Vector3(100, 1, 100);
-	}
-
-	else if (tag == 2)
-	{
+	case 1:
+		m_pos = Vector3(100, 1, 100);		
+		break;
+	case 2:
 		m_pos = Vector3(100, 1, 500);
+		break;
+	case 3:
+		m_pos = Vector3(500, 1, 100);
+		break;
+	case 4:
+		m_pos = Vector3(500, 1, 500);
+		break;
 	}
+
+	spawnPoint = m_pos;
 
 	position = m_pos;
 	r = 2.0f;
@@ -191,7 +202,7 @@ void Boid::applyForce(Vector3 force)
 
 void Boid::flock(std::vector<Boid*> boids)
 {
-	Vector3 sep = separate(boids, 10);		// Separation
+	Vector3 sep = separate(boids, 15);		// Separation
 	Vector3 ali = align(boids);				// Alignment
 	Vector3 coh = cohesion(boids);			// Cohesion
 	Vector3 rep = separate(boids, 100);		// Repel	
@@ -210,9 +221,7 @@ void Boid::flock(std::vector<Boid*> boids)
 	
 	if (fighting)
 	{
-		Vector3 atr = attractEnemy(boids);		// Attract enemy
-		//applyForce(atr);
-		atr *= 5.0f;
+		attractEnemy(boids);
 	}
 
 	if (grouping)
@@ -255,16 +264,18 @@ Vector3 Boid::seek(Vector3 target)
 
 void Boid::boundingBox()
 {
-	int Xmin = -50, Xmax = 600, Zmin = -50, Zmax = 600;
+	int Xmin = 0, Xmax = 600, Zmin = 0, Zmax = 600;
 
 	if (m_pos.x < Xmin)
 	{
-		m_pos.x += (-49 - m_pos.x) * 0.01f;
+		m_pos.x += 0.5f;
+		velocity *= -1;
 	}
 
 	else if (m_pos.x > Xmax)
 	{
-		m_pos.x -= (559 - m_pos.x) * 0.01f;
+		m_pos.x -= 0.5f;
+		velocity *= -1;
 	}
 
 	if ((m_pos.y < 0) || (m_pos.y > 0))
@@ -274,12 +285,14 @@ void Boid::boundingBox()
 
 	if (m_pos.z < Zmin)
 	{
-		m_pos.z += (-49 - m_pos.z) * 0.01f;
+		m_pos.z += 0.5f;
+		velocity *= -1;
 	}
 
 	else if (m_pos.z > Zmax)
 	{
-		m_pos.z += (559 - m_pos.z) * 0.01f;
+		m_pos.z -= 0.5f;
+		velocity *= -1;
 	}
 }
 
@@ -385,20 +398,25 @@ Vector3 Boid::repel(std::vector<Boid*> boids)
 
 void Boid::applyGrouping()
 {
-	if (ID % 2 == 0)
+	switch (tag)
 	{
-		applyForce(seek(Vector3(100, 0, 100)) * 2);
-	}
-
-	else
-	{
-		applyForce(seek(Vector3(400, 0, 400)) * 2);
+	case 1:
+		applyForce(seek(Vector3(100, 1, 100)) * 2);
+		break;
+	case 2:
+		applyForce(seek(Vector3(100, 1, 500)) * 2);
+		break;
+	case 3:
+		applyForce(seek(Vector3(500, 1, 100)) * 2);
+		break;
+	case 4:
+		applyForce(seek(Vector3(500, 1, 500)) * 2);
+		break;
 	}
 }
 
 Vector3 Boid::align(std::vector<Boid*> boids)
 {
-	float neighbordist = 30.0f;
 	Vector3 sum = Vector3(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -409,7 +427,7 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 			{
 				float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
 
-				if ((dis > 0) && (dis < neighbordist))
+				if ((dis > 0) && (dis < m_boidData->neighbourDis))
 				{
 					if (boids[i]->getAlive())
 					{
@@ -440,7 +458,6 @@ Vector3 Boid::align(std::vector<Boid*> boids)
 
 Vector3 Boid::cohesion(std::vector<Boid*> boids)
 {
-	float neighbordist = 30.0f;
 	Vector3 sum = Vector3(0, 0, 0);   
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++)
@@ -449,7 +466,7 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 		{
 			if (checkColour(this, boids[i]))
 			{
-				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
+				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < m_boidData->neighbourDis)
 				{
 					if (boids[i]->getAlive())
 					{
@@ -472,11 +489,9 @@ Vector3 Boid::cohesion(std::vector<Boid*> boids)
 	}	
 }
 
-Vector3 Boid::attractEnemy(std::vector<Boid*> boids)
+void Boid::attractEnemy(std::vector<Boid*> boids)
 {
-	float neighbordist = 10.0f;
-	Vector3 sum = Vector3(0, 0, 0);
-	int count = 0;
+	float enemyDis = 10.0f;
 
 	for (int i = 0; i < boids.size(); i++)
 	{
@@ -484,12 +499,10 @@ Vector3 Boid::attractEnemy(std::vector<Boid*> boids)
 		{
 			if (!checkColour(this, boids[i]))
 			{
-				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < neighbordist)
+				if (Vector3::Distance(m_pos, boids[i]->GetPos()) < enemyDis)
 				{
 					if (boids[i]->getAlive())
 					{
-						sum += boids[i]->GetPos();
-						count++;
 						attackEnemy(boids[i]);
 						break;
 					}
@@ -497,17 +510,17 @@ Vector3 Boid::attractEnemy(std::vector<Boid*> boids)
 			}
 		}
 	}
+}
 
-	if (count > 0)
-	{
-		sum /= count;
-		return seek(sum);
-	}
-
-	else
-	{
-		return Vector3(0, 0, 0);
-	}
+void Boid::resetBoid()
+{
+	m_pos = spawnPoint;
+	alive = true;
+	health = 100;
+	grouping = false;
+	fighting = false;
+	m_pitch = 0;
+	active = false;
 }
 
 bool Boid::checkColour(Boid* b, Boid* c)

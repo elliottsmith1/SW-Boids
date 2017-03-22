@@ -10,7 +10,7 @@ class Boid : public VBGO
 {
 
 public:
-	Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData);
+	Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type);
 	~Boid() = default;
 
 	void Tick(GameData* _GD) override;
@@ -23,8 +23,7 @@ public:
 	void boundingBox();
 	Vector3 separate(std::vector<Boid*> boids, int _sep);
 	Vector3 align(std::vector<Boid*> boids);
-	Vector3 cohesion(std::vector<Boid*> boids);
-	Vector3 attractEnemy(std::vector<Boid*> boids);
+	Vector3 cohesion(std::vector<Boid*> boids);	
 	Vector3 repel(std::vector<Boid*> boids);
 	void applyGrouping();
 	bool checkColour(Boid* b, Boid* c);
@@ -44,6 +43,8 @@ public:
 	void fall();
 	void setFighting(bool _fighting);
 	bool getFighting();
+	void attractEnemy(std::vector<Boid*> boids);
+	void resetBoid();
 
 protected:
 	myVertex* m_vertices;
@@ -52,6 +53,7 @@ protected:
 	Vector3 acceleration;
 	Vector3 maxSpeedV;
 	Vector3 maxForceV;
+	Vector3 spawnPoint;
 	float r; 
 	int tag = 1;
 	bool active = false;

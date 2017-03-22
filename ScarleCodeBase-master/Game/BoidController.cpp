@@ -5,16 +5,25 @@
 
 #include <iostream>
 
-BoidController::BoidController(int _numBoids, std::string _fileName, ID3D11Device * _pd3dDevice, IEffectFactory * _EF, BoidData* _boidData)
+BoidController::BoidController(int _numBoids, ID3D11Device * _pd3dDevice, IEffectFactory * _EF, BoidData* _boidData)
 {
-	numBoids = _numBoids;
+	maxBoids = _numBoids;
 
-	boids.reserve(numBoids);	
+	int maxAllBoids = maxBoids * 4;
 
-	for (int i = 0; i < numBoids; i++)
+	boids.reserve(maxBoids);
+
+	for (int i = 0; i < (maxBoids); i++)
 	{
-		boid = new Boid(_pd3dDevice, i, _boidData);
+		boid = new Boid(_pd3dDevice, i, _boidData, spawnTag);
 		boids.push_back(boid);
+
+		spawnTag++;
+
+		if (spawnTag > 4)
+		{
+			spawnTag = 1;
+		}
 	}
 }
 
@@ -43,7 +52,7 @@ void BoidController::Tick(GameData* _GD)
 
 	updateNum += 100;
 
-	if (updateNum > numBoids)
+	if (updateNum > maxBoids)
 	{
 		updateNum = 0;
 	}
@@ -60,28 +69,29 @@ void BoidController::DrawBoids(DrawData* _DD)
 	}
 }
 
-void BoidController::SpawnBoid(int tag)
+void BoidController::SpawnBoid()
 {
 	// Loop through all boids
 	for (int i = 0; i < boids.size(); i++)
 	{
-		//Check if boid is active,
-		if (boids[i]->GetActive() == false)
+		//spawn 1 type at a time
+		if (boids[i]->GetTag() == spawnTag)
 		{
-			// If not, spawn a new one and set tag
-			boids[i]->SetActive(true);
-			/*switch (tag)
+			//Check if boid is active,
+			if (boids[i]->GetActive() == false)
 			{
-			case 1:
-				boids[i]->SetTag(1);
-				break;
-			case 2:
-				boids[i]->SetTag(2);
-				break;
-			default:
-				break;
-			}*/
-			return;
+				// If not, spawn a new one and set tag
+				boids[i]->SetActive(true);
+
+				spawnTag++;
+
+				if (spawnTag > 4)
+				{
+					spawnTag = 1;
+				}
+
+				//return;
+			}
 		}
 	}
 }
@@ -127,6 +137,14 @@ void BoidController::disableFighting()
 		{
 			boids[i]->setFighting(false);
 		}
+	}
+}
+
+void BoidController::resetBoids()
+{
+	for (int i = 0; i < boids.size(); i++)
+	{
+		boids[i]->resetBoid();
 	}
 }
 

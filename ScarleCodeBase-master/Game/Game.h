@@ -45,6 +45,8 @@ public:
 	void ungroupBoids();
 	void fightBoids();
 	void passiveBoids();
+	void controllerSpawn();
+	void controllerReset();
 
 protected:
 	DWORD m_playTime; //amount of time since the game started
@@ -83,6 +85,8 @@ protected:
 
 	//Tick functions for each state
 	void PlayTick();
+
+	int maxBoidSpawn = 0;
 
 };
 

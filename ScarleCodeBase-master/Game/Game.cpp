@@ -47,6 +47,20 @@ void TW_CALL PassiveCB(void * m_boidData)
 	game->passiveBoids();
 }
 
+void TW_CALL SpawnCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->controllerSpawn();
+}
+
+void TW_CALL ResetCB(void * m_boidData)
+{
+	Game *game = (Game*)m_boidData;
+
+	game->controllerReset();
+}
+
 Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance) 
 {
 	//set up audio
@@ -222,12 +236,13 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	//m_GameObject2Ds.push_back(text);	
 
 	m_boidData =  new BoidData;
-	m_boidData->alignmentWeight = 2.0f;
-	m_boidData->seperationWeight = 5.0f;
+	m_boidData->alignmentWeight = 1.0f;
+	m_boidData->seperationWeight = 3.0f;
 	m_boidData->cohesionWeight = 1.0f;
-	m_boidData->repelWeight = 1.0f;
+	m_boidData->repelWeight = 2.0f;
 	m_boidData->maxSpeed = 0.5f;
 	m_boidData->maxForce = 0.03f;
+	m_boidData->neighbourDis = 50.0f;
 
 	TwInit(TW_DIRECT3D11, _pd3dDevice);
 	TwWindowSize(width, height);
@@ -246,8 +261,12 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	TwAddButton(myBar, "Disable Grouping", UnGroupCB, this, " label='Disable Grouping' ");
 	TwAddButton(myBar, "Enable Fighting", FightCB, this, " label='Enable Fighting' ");
 	TwAddButton(myBar, "Disable Fighting", PassiveCB, this, " label='Disable Fighting' ");
+	TwAddButton(myBar, "Spawn Boids", SpawnCB, this, " label='Spawn Boids' ");
+	TwAddButton(myBar, "Reset Boids", ResetCB, this, " label='Reset Boids' ");
 
-	controller = std::make_unique<BoidController>(1000, "JEMINA vase -up.cmo", _pd3dDevice, m_fxFactory, m_boidData);
+	maxBoidSpawn = 800;
+
+	controller = std::make_unique<BoidController>(maxBoidSpawn, _pd3dDevice, m_fxFactory, m_boidData);
 };
 
 Game::~Game() 
@@ -366,10 +385,14 @@ void Game::PlayTick()
 	}
 
 	//spawn boids
-	//if ((m_keyboardState[DIK_B] & 0x80) && !(m_prevKeyboardState[DIK_B] & 0x80))
 	if (m_keyboardState[DIK_B] & 0x80)
 	{
-		controller->SpawnBoid(1);
+		if (maxBoidSpawn > 0)
+		{
+			controller->SpawnBoid();
+
+			maxBoidSpawn--;
+		}
 	}
 
 	//update all objects
@@ -422,6 +445,7 @@ void Game::Draw(ID3D11DeviceContext* _pd3dImmediateContext)
 
 	TwDraw();
 }
+
 void Game::groupBoids()
 {
 	controller->groupBoids();
@@ -440,6 +464,16 @@ void Game::fightBoids()
 void Game::passiveBoids()
 {
 	controller->disableFighting();
+}
+
+void Game::controllerSpawn()
+{
+	controller->SpawnBoid();
+}
+
+void Game::controllerReset()
+{
+	controller->resetBoids();
 }
 
 bool Game::ReadInput()
