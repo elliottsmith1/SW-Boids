@@ -180,13 +180,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 
 	//create boid data struct and assign values
 	m_boidData =  new BoidData;
-	m_boidData->alignmentWeight = 1.0f;
-	m_boidData->seperationWeight = 4.0f;
-	m_boidData->cohesionWeight = 1.0f;
 	m_boidData->braveryWeight = -2.0f;
-	m_boidData->maxSpeed = 0.5f;
-	m_boidData->maxForce = 0.04f;
-	m_boidData->neighbourDis = 50.0f;
 
 	TwInit(TW_DIRECT3D11, _pd3dDevice);
 	TwWindowSize(width, height);
@@ -212,7 +206,7 @@ Game::Game(ID3D11Device* _pd3dDevice, HWND _hWnd, HINSTANCE _hInstance)
 	TwAddButton(myBar, "Reset Boids", ResetCB, this, " label='Reset Boids' ");
 
 	//how many boids to spawn
-	maxBoidSpawn = 1000;
+	maxBoidSpawn = 800;
 
 	//create boid manager
 	controller = std::make_unique<BoidController>(maxBoidSpawn, _pd3dDevice, m_fxFactory, m_boidData);

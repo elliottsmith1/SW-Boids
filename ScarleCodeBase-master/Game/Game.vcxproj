@@ -136,25 +136,14 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameData.h" />
     <ClInclude Include="gameobject.h" />
-    <ClInclude Include="GameObject2D.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Helper.h" />
-    <ClInclude Include="ImageGO2D.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="MarchCubes.h" />
     <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Terrain.h" />
-    <ClInclude Include="TextGO2D.h" />
     <ClInclude Include="TPSCamera.h" />
-    <ClInclude Include="Tree.h" />
-    <ClInclude Include="TreeBit.h" />
-    <ClInclude Include="VBCube.h" />
     <ClInclude Include="VBGO.h" />
-    <ClInclude Include="VBPillow.h" />
-    <ClInclude Include="VBSnail.h" />
-    <ClInclude Include="VBSpiked.h" />
-    <ClInclude Include="VBspiral.h" />
     <ClInclude Include="vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -165,19 +154,11 @@
     <ClCompile Include="fileVBGO.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="gameobject.cpp" />
-    <ClCompile Include="GameObject2D.cpp" />
-    <ClCompile Include="ImageGO2D.cpp" />
     <ClCompile Include="light.cpp" />
-    <ClCompile Include="MarchCubes.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Terrain.cpp" />
-    <ClCompile Include="TextGO2D.cpp" />
     <ClCompile Include="TPSCamera.cpp" />
-    <ClCompile Include="Tree.cpp" />
-    <ClCompile Include="treebit.cpp" />
-    <ClCompile Include="VBCube.cpp" />
     <ClCompile Include="VBGO.cpp" />
-    <ClCompile Include="VBSnail.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

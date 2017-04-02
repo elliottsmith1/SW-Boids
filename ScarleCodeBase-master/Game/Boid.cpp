@@ -13,6 +13,31 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type, i
 	ID = _id;
 	m_boidData = _boidData;
 
+	//for each of the 4 types, assign spawn point, tag and colour
+	switch (_type)
+	{
+	case 1:
+		colour = Vector4(1, 0, 0, 1);
+		m_pos = Vector3(100, 1, 100);
+		tag = 1;
+		break;
+	case 2:
+		colour = Vector4(0, 1, 0, 1);
+		m_pos = Vector3(100, 1, 500);
+		tag = 2;
+		break;
+	case 3:
+		colour = Vector4(0, 0, 1, 1);
+		m_pos = Vector3(500, 1, 100);
+		tag = 3;
+		break;
+	case 4:
+		colour = Vector4(1, 1, 1, 1);
+		m_pos = Vector3(500, 1, 500);
+		tag = 4;
+		break;
+	}
+
 	int numVerts = 24;
 	m_numPrims = numVerts / 3;
 	myVertex* m_vertices = new myVertex[numVerts];
@@ -23,27 +48,6 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type, i
 	{
 		indices[i] = i;
 		m_vertices[i].texCoord = Vector2::One;
-	}
-
-	//for each of the 4 types, assign tag and colour
-	switch (_type)
-	{
-	case 1:
-		colour = Vector4(1, 0, 0, 1);
-		tag = 1;
-		break;
-	case 2:
-		colour = Vector4(0, 1, 0, 1);
-		tag = 2;
-		break;
-	case 3:
-		colour = Vector4(0, 0, 1, 1);
-		tag = 3;
-		break;
-	case 4:
-		colour = Vector4(1, 1, 1, 1);
-		tag = 4;
-		break;
 	}
 
 	//in each loop create the two traingles for the matching sub-square on each face
@@ -145,24 +149,7 @@ Boid::Boid(ID3D11Device* _pd3dDevice, int _id, BoidData* _boidData, int _type, i
 
 	SetYaw(angle);
 
-	velocity = Vector3(cos(angle), 0, tan(angle));
-
-	//normal spawn locations for each type
-	switch (tag)
-	{
-	case 1:
-		m_pos = Vector3(100, 1, 100);		
-		break;
-	case 2:
-		m_pos = Vector3(100, 1, 500);
-		break;
-	case 3:
-		m_pos = Vector3(500, 1, 100);
-		break;
-	case 4:
-		m_pos = Vector3(500, 1, 500);
-		break;
-	}
+	velocity = Vector3(cos(angle), 0, tan(angle));	
 
 	spawnPoint = m_pos;
 
@@ -190,7 +177,7 @@ void Boid::checkNearBoids(std::vector<Boid*> boids)
 	{
 		float dis = Vector3::Distance(m_pos, boids[i]->GetPos());
 
-		if ((dis > 0) && (dis < 150))
+		if ((dis > 0) && (dis < m_boidData->neighbourDis))
 		{
 			nearBoids.push_back(boids[i]);
 		}
